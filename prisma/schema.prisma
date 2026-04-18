@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+datasource db {
+ provider = "mysql"
+ url      = env("DATABASE_URL")
+}
+
+enum roleUser {
+  admin
+  user
+}
+
+enum mood{
+  baik
+  biasa
+  buruk
+}
+
+enum roleML{
+  gold
+  exp
+  mid
+  jungle
+  roam
+}
+
+model User{
+  id String @id @db.VarChar(36) @default(uuid())
+  username String @db.VarChar(100) @unique
+  password String @db.VarChar(100) 
+  nama String @db.VarChar(100)
+  role roleUser
+  game_id String
+  server_id String @db.VarChar(4)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  absensi Absensi[]
+  team Team?
+
+  @@map("users")
+}
+
+model Kegiatan{
+  id Int @id 
+  nama_kegiatan String @db.VarChar(100)
+  tanggal_kegiatan DateTime
+  jam String @db.VarChar(50)
+  absensi Absensi[]
+
+  @@map("kegiatan")
+}
+
+model Absensi{
+  id Int @default(autoincrement()) @id
+  user_id String
+  kegiatan_id Int
+  deskripsi String @db.VarChar(1000)
+  mood mood
+  bukti String @db.VarChar(100)
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  kegiatan Kegiatan @relation(fields: [kegiatan_id], references: [id], onDelete: Cascade)
+  @@map("absensi")
+}
+
+model Team{
+  id Int @id @default(autoincrement())
+  nama_tim String @db.VarChar(50)
+  user_id String @unique
+  role roleML
+
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  @@map("teams")
+}
+
