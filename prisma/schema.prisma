@@ -47,7 +47,7 @@ model User{
 }
 
 model Kegiatan{
-  id Int @id 
+  id String @id @db.VarChar(36) @default(uuid())
   nama_kegiatan String @db.VarChar(100)
   tanggal_kegiatan DateTime
   jam String @db.VarChar(50)
@@ -59,7 +59,7 @@ model Kegiatan{
 model Absensi{
   id Int @default(autoincrement()) @id
   user_id String
-  kegiatan_id Int
+  kegiatan_id String
   deskripsi String @db.VarChar(1000)
   mood mood
   bukti String @db.VarChar(100)

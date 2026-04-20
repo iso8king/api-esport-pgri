@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import { validate } from "../validation/validate.js";
 import { changePassword, loginValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
 import { responseError } from "../error/response-error.js";
+import { stringify } from "uuid";
 
 function generateJWT(data, secret_token, duration){
     return jwt.sign(data , secret_token, {expiresIn : duration})
@@ -12,6 +13,7 @@ function generateJWT(data, secret_token, duration){
 const register = async(request)=>{
     const user = validate(registerUserValidation , request);
     user.role = user?.role || "user"; // role default
+    user.role = user.role.toLowerCase()
     console.log("masuk")
 
     // password
@@ -55,7 +57,8 @@ const login = async(request)=>{
         role : user.role,
         game_id : user.game_id,
         server_id : user.server_id,
-        id : user.id
+        id : user.id,
+        
     }
 
     if (!user) throw new responseError('401', 'Akun kredensial salah!');
@@ -65,7 +68,8 @@ const login = async(request)=>{
 
     const tokenAccess = generateJWT(data, process.env.ACCESS_TOKEN_SECRET, "1h");
     const tokenRefresh = generateJWT(data, process.env.ACCESS_TOKEN_SECRET, "14w");
-
+    data.token_access = tokenAccess;
+    data.token_refresh = tokenRefresh
     return data
 };
 

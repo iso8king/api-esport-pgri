@@ -1,4 +1,6 @@
+
 import jwt from 'jsonwebtoken'
+import { responseError } from '../error/response-error.js';
 
 export const authMiddleware = async(req,res,next)=>{
     const cookie = req.cookies.accessToken;
@@ -22,4 +24,14 @@ export const authMiddleware = async(req,res,next)=>{
     }
 
     
+}
+
+export const roleMiddleware = (roleAllowed = []) =>{
+    return (req,res,next)=>{
+        const role = req.user.role;
+        if(!roleAllowed.includes(role)){
+            throw new responseError(403 , "Unathorized!");
+        }
+        next();
+    }
 }
