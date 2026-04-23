@@ -15,8 +15,18 @@ web.use((err, req, res, next) => {
   next(err);
 });
 
+const corsOptions = {
+  origin: 'http://localhost:5173', // URL frontend exact
+  credentials: true, // Wajib true
+  methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+  exposedHeaders: ['Set-Cookie'], // Penting!
+  preflightContinue: false,
+  optionsSuccessStatus: 204
+};
 
-web.use(cors());
+
+web.use(cors(corsOptions));
 web.use(express.json());
 web.use(cookieParser());
 web.use(publicRouter);

@@ -1,6 +1,7 @@
 import Joi from "joi";
 
 export const registerUserValidation = Joi.object({
+    email : Joi.string().max(100).required().email(),
     username : Joi.string().max(100).required(),
     password : Joi.string().max(100).required(),
     nama : Joi.string().max(100).required(),
@@ -24,4 +25,10 @@ export const updateUserValidation = Joi.object({
 export const changePassword = Joi.object({
     password : Joi.string().max(100).required()
 })
+
+export const otpVerificationValidation = Joi.object({
+    email : Joi.string().required().email(),
+    otp : Joi.string().required()
+});
+
 

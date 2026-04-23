@@ -12,6 +12,7 @@ const siswaRouter = express.Router();
 userRouter.delete('/api/users/logout' , [authMiddleware] , userController.logout);
 userRouter.get('/api/users/current' , [authMiddleware] , userController.getUser)
 userRouter.patch('/api/users/updateprofile' , [authMiddleware] , userController.updateProfile);
+userRouter.post('/api/users/verify', authMiddleware, userController.verifyOTP)
 
 // Admin Router
 adminRouter.post('/api/kegiatan/create', [authMiddleware, roleMiddleware(['admin'])], adminController.createKegiatan)

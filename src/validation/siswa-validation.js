@@ -6,6 +6,7 @@ export const createAbsensiValidation = Joi.object({
     deskripsi : Joi.string().max(1000).required(),
     mood : Joi.string().allow("baik", 'buruk', 'biasa').required(),
     bukti : Joi.string().max(100).required()
-})
+});
+
 
 

@@ -2,22 +2,32 @@ import { prismaClient } from "../application/database.js";
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { validate } from "../validation/validate.js";
-import { changePassword, loginValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
+import { changePassword, loginValidation, otpVerificationValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
 import { responseError } from "../error/response-error.js";
 import { stringify } from "uuid";
+import { sendOTP } from "../application/mailer.js";
 
 function generateJWT(data, secret_token, duration){
     return jwt.sign(data , secret_token, {expiresIn : duration})
 }
 
+function generateOTP() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
+}
+
 const register = async(request)=>{
     const user = validate(registerUserValidation , request);
+    const otp = generateOTP();
+    const otpHash = await bcrypt.hash(otp , 10);
+    user.otp = otpHash;
     user.role = user?.role || "user"; // role default
     user.role = user.role.toLowerCase()
     console.log("masuk")
 
     // password
     user.password = await bcrypt.hash(user.password, 10);
+
+    await sendOTP(user.email, otp);
     
     const registerUser = await prismaClient.user.create({
         data : user,
@@ -36,6 +46,7 @@ const register = async(request)=>{
 
 const login = async(request)=>{
     const loginRequest = validate(loginValidation, request);
+    
 
     const user = await prismaClient.user.findUnique({
         where : {
@@ -47,7 +58,9 @@ const login = async(request)=>{
             role : true,
             game_id : true,
             server_id : true,
-            id : true
+            id : true,
+            email : true,
+            status:true
         }
     });
 
@@ -58,6 +71,8 @@ const login = async(request)=>{
         game_id : user.game_id,
         server_id : user.server_id,
         id : user.id,
+        status : user.status,
+        email : user.email
         
     }
 
@@ -94,6 +109,43 @@ const updateProfile = async(id_user,request)=>{
 
 }
 
+
+const verifyOTP = async (request) => {
+  const otpRequest = validate(otpVerificationValidation, request);
+  console.log(otpRequest);
+
+  const user = await prismaClient.user.findUnique({
+    where: {
+      email: otpRequest.email,
+    },
+    select: {
+      otp: true,
+      status: true
+    },
+  });
+
+  if (!user || user.otp === null) {
+    throw new responseError(404, "User or OTP Not Found!");
+  }
+
+console.log(otpRequest.otp , user.otp)
+  const otpCheck = await bcrypt.compare(otpRequest.otp , user.otp);
+
+  if (otpCheck === false) throw new responseError(400, "OTP wrong!");
+
+  await prismaClient.user.update({
+    where: {
+      email: otpRequest.email,
+    },
+    data: {
+      status: true,
+      otp: null,
+    },
+  });
+
+  return "Akun Berhasil Di Verifikasi";
+};
+
 // lanjut nanti aja buat change password
 // const changePassword = async(request)=>{
 //     const changePassword = validate(changePassword, request);
@@ -119,5 +171,6 @@ const updateProfile = async(id_user,request)=>{
 export default {
     register,
     login,
-    updateProfile
+    updateProfile,
+    verifyOTP
 }

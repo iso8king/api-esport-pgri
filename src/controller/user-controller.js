@@ -16,14 +16,13 @@ const login = async(req,res,next)=>{
     try {
         const result = await userService.login(req.body);
         res.cookie('accessToken', result.token_access, {
-            httpOnly: true,
-            path : '/'
+             httpOnly: true,
+             secure: false, // false untuk localhost
+             sameSite: 'lax',
+             maxAge:  60 * 60 * 1000, // 7 hari
+            path: '/'
         });
 
-        res.cookie("refreshToken", result.token_refresh, {
-        httpOnly: true,
-        path: "/",
-        });
 
         res.status(200).json({
         data: result,
@@ -73,10 +72,25 @@ const getUser = (req,res,next)=>{
     }
 }
 
+const verifyOTP = async(req,res,next)=>{
+    try {
+    const request = req.body;
+    request.email = req.user.email;
+    console.log(request)
+    const result = await userService.verifyOTP(request);
+    res.status(200).json({
+      data: result
+    });
+    } catch (e) {
+        next(e)        
+    }
+}
+
 export default{
     register,
     login,
     logout,
     updateProfile,
-    getUser
+    getUser,
+    verifyOTP
 }
