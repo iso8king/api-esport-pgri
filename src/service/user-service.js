@@ -26,8 +26,6 @@ const register = async(request)=>{
 
     // password
     user.password = await bcrypt.hash(user.password, 10);
-
-    await sendOTP(user.email, otp);
     
     const registerUser = await prismaClient.user.create({
         data : user,
@@ -41,6 +39,8 @@ const register = async(request)=>{
         }
     });
 
+    await sendOTP(user.email, otp);
+
     return registerUser;
 };
 
@@ -48,21 +48,27 @@ const login = async(request)=>{
     const loginRequest = validate(loginValidation, request);
     
 
-    const user = await prismaClient.user.findUnique({
-        where : {
-            username : loginRequest.username
-        },select : {
-            password : true,
-            username : true,
-            nama : true,
-            role : true,
-            game_id : true,
-            server_id : true,
-            id : true,
-            email : true,
-            status:true
-        }
-    });
+    const user = await prismaClient.user.findFirst({
+  where: {
+    OR: [
+      { username: loginRequest.username },
+      { email: loginRequest.username }
+    ]
+  },
+  select: {
+    password: true,
+    username: true,
+    nama: true,
+    role: true,
+    game_id: true,
+    server_id: true,
+    id: true,
+    email: true,
+    status: true
+  }
+});
+
+    
 
     const data = {
         username : user.username,
@@ -145,6 +151,8 @@ console.log(otpRequest.otp , user.otp)
 
   return "Akun Berhasil Di Verifikasi";
 };
+
+
 
 // lanjut nanti aja buat change password
 // const changePassword = async(request)=>{

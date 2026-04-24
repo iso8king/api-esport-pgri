@@ -24,6 +24,7 @@ adminRouter.get('/api/absen/:id_kegiatan/get' , [authMiddleware, roleMiddleware(
 
 // Siswa Router
 siswaRouter.post('/api/absen/:id_kegiatan/create', [authMiddleware, roleMiddleware(['user']), upload.single("bukti")], siswaController.createAbsensi);
+siswaRouter.get('/api/absen/get/complete', [authMiddleware, roleMiddleware(['user'])] ,siswaController.getUserAbsen)
 
 export{
     userRouter,

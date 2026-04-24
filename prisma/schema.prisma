@@ -55,6 +55,8 @@ model Kegiatan{
   tanggal_kegiatan DateTime
   jam String @db.VarChar(50)
   absensi Absensi[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@map("kegiatan")
 }
@@ -66,6 +68,7 @@ model Absensi{
   deskripsi String @db.VarChar(1000)
   mood mood
   bukti String @db.VarChar(100)
+  createdAt DateTime @default(now())
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   kegiatan Kegiatan @relation(fields: [kegiatan_id], references: [id], onDelete: Cascade)
@@ -77,6 +80,8 @@ model Team{
   nama_tim String @db.VarChar(50)
   user_id String @unique
   role roleML
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
   @@map("teams")

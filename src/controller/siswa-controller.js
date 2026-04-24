@@ -17,6 +17,19 @@ const createAbsensi = async(req,res,next)=>{
     }
 }
 
+const getUserAbsen = async(req,res,next)=>{
+    try {
+        const request = req.user.id;
+        const result = await siswaService.alreadyAbsen(request);
+        return res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e)        
+    }
+}
+
 export default{
-    createAbsensi
+    createAbsensi,
+    getUserAbsen
 }

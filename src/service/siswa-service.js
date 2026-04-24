@@ -21,6 +21,18 @@ const createAbsensi = async(request)=>{
     })
 }
 
+const alreadyAbsen = async(id_siswa) =>{
+    return prismaClient.absensi.findMany({
+        where : {
+            user_id : id_siswa
+        },select : {
+            kegiatan_id : true,
+            createdAt : true
+        }
+    })
+}
+
 export default{
-    createAbsensi
+    createAbsensi,
+    alreadyAbsen
 }
