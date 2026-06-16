@@ -6,9 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
+  provider  = "mysql"
   url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  // directUrl = env("DIRECT_URL")
 }
 
 enum roleUser {
@@ -38,11 +38,12 @@ model User{
   nama String @db.VarChar(100)
   role roleUser
   game_id String
-  server_id String @db.VarChar(4)
+  server_id String @db.VarChar(5)
   otp String? @db.VarChar(100)
   status Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  usernameUpdatedAt DateTime? 
   absensi Absensi[]
   member TeamMember?
 

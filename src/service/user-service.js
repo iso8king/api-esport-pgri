@@ -103,26 +103,48 @@ const login = async(request)=>{
     return data
 };
 
-const updateProfile = async(id_user,request)=>{
-    request = validate(updateUserValidation, request);
-    const data = {};
 
-    const field = ['nama' , 'email' , 'game_id' , 'server_id']
 
-    for (const f of field) {
-        if(request[f] !== "undefined"){
-            data[f] = request[f]
-        }      
+const updateProfile = async (id_user, request) => {
+  request = validate(updateUserValidation, request);
+  const data = {};
+
+  const field = ['nama', 'email', 'game_id', 'server_id'];
+  for (const f of field) {
+    if (request[f] !== undefined) {
+      data[f] = request[f];
     }
+  }
 
-    return prismaClient.user.update({
-        where: {
-            id : id_user
-        },
-        data
-    })
+  if (request.username !== undefined) {
+    const checkUsernameCooldown = await prismaClient.user.findUnique({
+      where: { id: id_user },
+      select: { usernameUpdatedAt: true }
+    });
 
-}
+    if (checkUsernameCooldown?.usernameUpdatedAt) {
+      const cooldownParameter = new Date(checkUsernameCooldown.usernameUpdatedAt);
+      cooldownParameter.setDate(cooldownParameter.getDate() + 180); 
+
+      if (Date.now() >= cooldownParameter.getTime()) {
+        data.username = request.username;
+        data.usernameUpdatedAt = new Date()
+      } else {
+        const sisaCooldown = Math.ceil((cooldownParameter.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+        throw new responseError(403, `Akun Kamu masih cooldown ganti username selama ${sisaCooldown} hari lagi`);
+      }
+    } else {
+      data.username = request.username;
+      data.usernameUpdatedAt = new Date()
+    }
+  }
+
+  return prismaClient.user.update({
+    where: { id: id_user },
+    data
+  });
+};
+
 
 
 const verifyOTP = async (request) => {

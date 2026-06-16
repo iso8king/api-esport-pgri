@@ -11,7 +11,8 @@ export const updateKegiatanValidation = Joi.object({
     id : Joi.string().max(36).required(),
     nama_kegiatan : Joi.string().max(100).optional(),
     tanggal_kegiatan : Joi.date().optional(),
-    jam : Joi.string().optional()
+    jam : Joi.string().optional(),
+    onlyTeam : Joi.bool().optional()
 })
 
 export const idKegiatanValidation = Joi.string().max(36).required();

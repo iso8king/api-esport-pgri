@@ -54,7 +54,7 @@ const updateKegiatan = async (id_kegiatan, request) => {
   request = validate(updateKegiatanValidation, request);
   const data = {};
 
-  const field = ["nama_kegiatan", "tanggal", "jam"];
+  const field = ["nama_kegiatan", "tanggal", "jam", 'onlyTeam'];
 
   for (const f of field) {
     if (request[f] !== "undefined") {
