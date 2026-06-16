@@ -57,7 +57,7 @@ const updateKegiatan = async (id_kegiatan, request) => {
   const field = ["nama_kegiatan", "tanggal", "jam", 'onlyTeam'];
 
   for (const f of field) {
-    if (request[f] !== "undefined") {
+    if (request[f] !== undefined && request[f] !== "undefined") {
       data[f] = request[f];
     }
   }
