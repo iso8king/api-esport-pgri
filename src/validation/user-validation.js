@@ -33,4 +33,12 @@ export const otpVerificationValidation = Joi.object({
     otp : Joi.string().required()
 });
 
+export const otpForgetPasswordValidation = Joi.object({
+    email : Joi.string().email().required()
+})
+
+export const changePasswordForgetValidation = Joi.object({
+    password : Joi.string().required()
+})
+
 

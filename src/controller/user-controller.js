@@ -119,6 +119,54 @@ const checkPassword = async(req,res,next)=>{
     }
 }
 
+const sendOTPForgetPassword = async(req,res,next) => {
+    try {
+        const request = req.body;
+        const result = await userService.otpForgetPassword(request);
+
+        res.status(200).json({
+            data : 'OK'
+        });
+    } catch (e) {  
+        next(e);
+    }
+}
+
+const verifyOTPForgetPassword = async(req,res,next)=>{
+    try {
+    const request = req.body;
+    console.log(request)
+    const result = await userService.verifyOTPChangePassword(request);
+     res.cookie('forgetPasswordToken', result, {
+             httpOnly: true,
+             secure: false,
+             sameSite: 'lax',
+             maxAge:  60 * 60 * 1000, 
+            path: '/'
+        });
+
+    res.status(200).json({
+      data: "Akun Berhasil di Verifikasi"
+    });
+    } catch (e) {
+        next(e)        
+    }
+}
+
+const changePasswordFromForgetPassword = async(req,res,next)=>{
+    try {
+        const request = req.body;
+        const cookie = req.cookies.forgetPasswordToken;
+        const result = await userService.changePasswordFromForgetPassword(cookie, request);
+        res.clearCookie("forgetPasswordToken", {path : '/'});
+        res.status(200).json({
+            data : "Success!"
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
 export default{
     register,
     login,
@@ -128,5 +176,8 @@ export default{
     verifyOTP,
     requestotp,
     changePassword,
-    checkPassword
+    checkPassword,
+    sendOTPForgetPassword,
+    verifyOTPForgetPassword,
+    changePasswordFromForgetPassword
 }
