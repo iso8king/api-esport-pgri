@@ -2,11 +2,10 @@ import ExcelJS from 'exceljs'
 import fs from 'fs'
 import path from 'path'
 
-const url = 'http://localhost:9999/' // nanti ganti
+const url = 'https://smegionesport.my.id' // nanti ganti
 export const exportSheet = async(datas) => {
     const workbook = new ExcelJS.Workbook();
     
-    // Sanitize worksheet name (max 31 chars, no special characters: * ? : / \ [ ])
     const rawSheetName = `Absensi ${datas[0].kegiatan.nama_kegiatan}`;
     const cleanSheetName = rawSheetName
         .replace(/[*?:/\\\[\]]/g, '')
