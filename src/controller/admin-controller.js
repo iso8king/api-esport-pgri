@@ -164,6 +164,31 @@ const exportExcel = async(req,res,next)=>{
     }
 }
 
+const deleteTeam = async(req,res,next)=>{
+    try {
+        const id_team = req.params.id_team;
+        const result = await adminService.deleteTeam(id_team);
+        res.status(200).json({
+            data : 'OK'
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const updateNameTeam = async(req,res,next)=>{
+    try {
+        const id_team = req.params.id_team;
+        const request = req.body;
+        const result = await adminService.updateTeamName(id_team, request);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
 export default{
     exportExcel,
     createKegiatan,
@@ -177,5 +202,7 @@ export default{
     getTeam,
     addingMember,
     removeMember,
-    statistic
+    statistic,
+    deleteTeam,
+    updateNameTeam
 }

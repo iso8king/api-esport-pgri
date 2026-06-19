@@ -1,7 +1,7 @@
 import { prismaClient } from "../application/database.js";
 import { validate } from "../validation/validate.js";
 import { responseError } from "../error/response-error.js";
-import { addMemberValidation, createKegiatanValidation, getAllValidation, idKegiatanValidation, updateKegiatanValidation } from "../validation/admin-validation.js";
+import { addMemberValidation, createKegiatanValidation, getAllValidation, idKegiatanValidation, idTeamValidation, updateKegiatanValidation, updateTeamNameValidation } from "../validation/admin-validation.js";
 import { exportSheet } from "../application/excel.js";
 
 const createKegiatan = async (request) => {
@@ -256,6 +256,36 @@ const exportExcel = async (id_kegiatan) => {
   return exportSheet(absen);
 };
 
+const deleteTeam = async(id_team)=>{
+    id_team = validate(idTeamValidation, id_team)
+    const team = await prismaClient.team.delete({
+      where : {
+        id : id_team
+      }
+    });
+
+    if(!team) throw new responseError(404, "Team Not Found!");
+}
+
+const updateTeamName = async(id_team , request)=>{
+  request = validate(updateTeamNameValidation, request)
+  id_team = validate(idTeamValidation, id_team)
+  const team = await prismaClient.team.update({
+     where : {
+      id : id_team
+    },
+    data : {
+      nama_tim : request.nama_tim
+    },
+    select : {
+      nama_tim : true
+    }
+  });
+
+  if(!team) throw new responseError(404, "Team Not Found!")
+  return team
+}
+
 export default {
   exportExcel,
   createKegiatan,
@@ -270,4 +300,6 @@ export default {
   addingMember,
   removeMember,
   statistik,
+  deleteTeam,
+  updateTeamName
 };

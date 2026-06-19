@@ -17,6 +17,8 @@ export const updateKegiatanValidation = Joi.object({
 
 export const idKegiatanValidation = Joi.string().max(36).required();
 
+export const idTeamValidation = Joi.number().required().min(1);
+
 export const getAllValidation = Joi.object({
     page : Joi.number().min(1).positive().default(1),
     size : Joi.number().min(1).max(100).default(10)
@@ -26,4 +28,8 @@ export const addMemberValidation = Joi.object({
     teamId : Joi.number().min(1).required(),
     userId : Joi.string().max(36).required(),
     role : Joi.string().valid("gold","exp","mid","jungle","roam").required()
+})
+
+export const updateTeamNameValidation = Joi.object({
+    nama_tim : Joi.string().max(100).required()
 })

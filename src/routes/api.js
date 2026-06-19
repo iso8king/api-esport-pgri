@@ -32,6 +32,8 @@ adminRouter.get('/api/teams/all' , [authMiddleware , roleMiddleware(['admin'])] 
 adminRouter.post('/api/teams/:team_id/add' , [authMiddleware , roleMiddleware(['admin'])] , adminController.addingMember)
 adminRouter.delete('/api/teams/:team_id/remove' , [authMiddleware , roleMiddleware(['admin'])] , adminController.removeMember)
 adminRouter.get('/api/statistik' , [authMiddleware, roleMiddleware(['admin'])] , adminController.statistic)
+adminRouter.delete('/api/teams/:id_team', [authMiddleware, roleMiddleware(['admin'])], adminController.deleteTeam)
+adminRouter.patch('/api/teams/:id_team', [authMiddleware, roleMiddleware(['admin'])], adminController.updateNameTeam)
 
 // Admin Settings Router
 adminRouter.post('/api/settings/hero', [authMiddleware, roleMiddleware(['admin']), uploadSetting.single("hero")], settingController.uploadHero);
