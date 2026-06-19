@@ -93,8 +93,8 @@ model TeamMember {
   role     roleML
   joinedAt DateTime @default(now())
 
-  team Team @relation(fields: [teamId], references: [id])
-  user User @relation(fields: [userId], references: [id])
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([teamId])
   @@map("teammember")
