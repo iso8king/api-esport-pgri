@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs'
 import fs from 'fs'
 import path from 'path'
 
-const url = 'https://smegionesport.my.id' // nanti ganti
+const url = 'https://smegionesport.my.id/' // nanti ganti
 export const exportSheet = async(datas) => {
     const workbook = new ExcelJS.Workbook();
     
