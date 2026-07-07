@@ -1,4 +1,8 @@
 node_modules
-# Keep environment variables out of version control
 .env
-assets/
+assets/*
+!assets/.gitkeep
+!assets/excel/.gitkeep
+!assets/upload/.gitkeep
+!assets/attachment/.gitkeep
+!assets/avatar/.gitkeep

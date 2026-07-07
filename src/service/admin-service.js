@@ -3,6 +3,12 @@ import { validate } from "../validation/validate.js";
 import { responseError } from "../error/response-error.js";
 import { addMemberValidation, createKegiatanValidation, getAllValidation, idKegiatanValidation, idTeamValidation, updateKegiatanValidation, updateTeamNameValidation } from "../validation/admin-validation.js";
 import { exportSheet } from "../application/excel.js";
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const createKegiatan = async (request) => {
   request = validate(createKegiatanValidation, request);
@@ -54,7 +60,7 @@ const updateKegiatan = async (id_kegiatan, request) => {
   request = validate(updateKegiatanValidation, request);
   const data = {};
 
-  const field = ["nama_kegiatan", "tanggal_kegiatan", "jam", 'onlyTeam'];
+  const field = ["nama_kegiatan", "tanggal_kegiatan", "jam", 'onlyTeam', 'attachment'];
 
   for (const f of field) {
     if (request[f] !== undefined && request[f] !== "undefined") {
@@ -78,6 +84,17 @@ const deleteKegiatan = async (id_kegiatan) => {
       id: id_kegiatan,
     },
   });
+
+  if(delKegiatan.attachment){
+    const filePath = path.join(__dirname, 'assets/attachment', delKegiatan.attachment);
+    fs.unlink(filePath, (err) => {
+    if (err) {
+        console.error('Gagal hapus file:', err);
+        return;
+      }
+        console.log('File berhasil dihapus'); 
+    });
+  }
 
   if (!delKegiatan) throw new responseError(404, "Not Found!");
 };

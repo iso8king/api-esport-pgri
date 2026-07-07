@@ -167,6 +167,21 @@ const changePasswordFromForgetPassword = async(req,res,next)=>{
     }
 }
 
+const uploadPfp = async(req,res,next)=>{
+    try {
+        const request = {}
+        request.id = req.user.id;
+        request.pfp = req.file.filename;
+
+        const result = await userService.uploadPfp(request);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
 export default{
     register,
     login,
@@ -179,5 +194,6 @@ export default{
     checkPassword,
     sendOTPForgetPassword,
     verifyOTPForgetPassword,
-    changePasswordFromForgetPassword
+    changePasswordFromForgetPassword,
+    uploadPfp
 }

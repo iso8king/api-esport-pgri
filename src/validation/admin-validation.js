@@ -4,7 +4,8 @@ export const createKegiatanValidation = Joi.object({
     nama_kegiatan : Joi.string().max(100).required(),
     tanggal_kegiatan : Joi.date().required(),
     jam : Joi.string().required(),
-    onlyTeam : Joi.boolean().required().default(false)
+    onlyTeam : Joi.boolean().required().default(false),
+    attachment : Joi.string().max(100).optional()
 });
 
 export const updateKegiatanValidation = Joi.object({
@@ -12,7 +13,8 @@ export const updateKegiatanValidation = Joi.object({
     nama_kegiatan : Joi.string().max(100).optional(),
     tanggal_kegiatan : Joi.date().optional(),
     jam : Joi.string().optional(),
-    onlyTeam : Joi.bool().optional()
+    onlyTeam : Joi.bool().optional(),
+    attachment : Joi.string().max(100).optional()
 })
 
 export const idKegiatanValidation = Joi.string().max(36).required();

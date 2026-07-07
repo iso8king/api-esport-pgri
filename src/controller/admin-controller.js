@@ -3,7 +3,9 @@ import { hapusSheet } from "../application/excel.js";
 
 const createKegiatan = async(req,res,next)=>{
     try {
-        const result = await adminService.createKegiatan(req.body);
+        const request = req.body;
+        if(req.file) request.attachment = req.file.filename;
+        const result = await adminService.createKegiatan(request);
         res.status(200).json({
             data : result
         })
@@ -43,7 +45,9 @@ const getAllKegiatan = async(req,res,next)=>{
 const updateKegiatan = async(req,res,next)=>{
     try {
         const id_kegiatan = req.params.id_kegiatan;
-        const result = await adminService.updateKegiatan(id_kegiatan,req.body);
+        const request = req.body;
+        if(req.file) request.attachment = req.file.filename;
+        const result = await adminService.updateKegiatan(id_kegiatan,request);
         res.status(200).json({
             data : result
         });
@@ -189,6 +193,8 @@ const updateNameTeam = async(req,res,next)=>{
     }
 }
 
+
+
 export default{
     exportExcel,
     createKegiatan,
@@ -204,5 +210,5 @@ export default{
     removeMember,
     statistic,
     deleteTeam,
-    updateNameTeam
+    updateNameTeam,
 }

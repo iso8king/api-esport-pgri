@@ -7,6 +7,8 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDir = path.join(__dirname, '../../assets/upload');
+const uploadDirAttachment = path.join(__dirname, '../../assets/attachment');
+const uploadDirAvatar = path.join(__dirname, '../../assets/avatar');
 
 function formatTanggal(date){
     const day = String(date.getDate()).padStart(2, '0');
@@ -34,8 +36,35 @@ const storage = multer.diskStorage({
     }
 }) 
 
+const storage_attachment = multer.diskStorage({
+    destination : (req,file, cb)=>{
+        cb(null, uploadDirAttachment);
+    },
+    filename : (req, file, cb)=>{
+        cb(null, file.originalname);
+    }
+}) 
+
+const storage_pfp = multer.diskStorage({
+    destination : (req,file, cb)=>{
+        cb(null, uploadDirAvatar);
+    },
+    filename : (req, file, cb)=>{
+        cb(null, req.user.username + path.extname(file.originalname));
+    }
+}) 
+
 // Filter extensi
 const allowExt = (req,file,cb)=>{
+    const allowMimes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if(allowMimes.includes(file.mimetype)){
+        cb(null, true);
+    } else{
+        cb(new responseError(400, "Salah Ekstensi File"));
+    }
+}
+
+const allowExtPfp = (req,file,cb)=>{
     const allowMimes = ['image/jpeg', 'image/png', 'image/jpg'];
     if(allowMimes.includes(file.mimetype)){
         cb(null, true);
@@ -50,6 +79,22 @@ export const upload = multer({
         fileSize: 2 * 1024 * 1024
     },
     fileFilter : allowExt
+});
+
+export const upload_attachment = multer({
+    storage : storage_attachment,
+    limits : {
+        fileSize: 5 * 1024 * 1024
+    },
+    fileFilter : allowExt
+})
+
+export const upload_pfp = multer({
+    storage : storage_pfp,
+    limits : {
+        fileSize: 2 * 1024 * 1024
+    },
+    fileFilter : allowExtPfp
 })
 
 const settingsStorage = multer.diskStorage({

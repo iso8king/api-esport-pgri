@@ -41,6 +41,7 @@ model User{
   server_id String @db.VarChar(5)
   otp String? @db.VarChar(100)
   status Boolean @default(false)
+  pfp String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   usernameUpdatedAt DateTime? 
@@ -56,6 +57,7 @@ model Kegiatan{
   tanggal_kegiatan DateTime
   jam String @db.VarChar(50)
   onlyTeam Boolean? @default(false)
+  attachment String?
   absensi Absensi[]
   createdAt DateTime @default(now())
   updatedAt DateTime? @updatedAt

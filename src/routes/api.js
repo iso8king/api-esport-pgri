@@ -3,7 +3,7 @@ import userController from '../controller/user-controller.js'
 import { authMiddleware, roleMiddleware } from '../middleware/auth-middleware.js'
 import adminController from '../controller/admin-controller.js';
 import siswaController from '../controller/siswa-controller.js';
-import { upload, uploadSetting } from '../application/multer.js';
+import { upload, upload_attachment, upload_pfp, uploadSetting } from '../application/multer.js';
 import settingController from '../controller/setting-controller.js';
 
 const userRouter = express.Router();
@@ -17,12 +17,13 @@ userRouter.post('/api/users/verify', authMiddleware, userController.verifyOTP)
 userRouter.post('/api/users/request/otp', authMiddleware , userController.requestotp)
 userRouter.patch('/api/users/update/password' , authMiddleware , userController.changePassword)
 userRouter.post('/api/users/check-password' , authMiddleware , userController.checkPassword)
+userRouter.patch('/api/users/upload/pfp', [authMiddleware, upload_pfp.single('avatar')], userController.uploadPfp)
 
 // Admin Router
-adminRouter.post('/api/kegiatan/create', [authMiddleware, roleMiddleware(['admin'])], adminController.createKegiatan)
+adminRouter.post('/api/kegiatan/create', [authMiddleware, roleMiddleware(['admin']), upload_attachment.single("attachment")], adminController.createKegiatan)
 adminRouter.get('/api/kegiatan/:id_kegiatan' , [authMiddleware, roleMiddleware(['admin', 'user'])] , adminController.getKegiatan);
 adminRouter.get('/api/kegiatan', [authMiddleware, roleMiddleware(['admin', 'user'])], adminController.getAllKegiatan);
-adminRouter.patch('/api/kegiatan/:id_kegiatan/update', [authMiddleware, roleMiddleware(['admin'])], adminController.updateKegiatan);
+adminRouter.patch('/api/kegiatan/:id_kegiatan/update', [authMiddleware, roleMiddleware(['admin']), upload_attachment.single("attachment")], adminController.updateKegiatan);
 adminRouter.delete('/api/kegiatan/:id_kegiatan/delete', [authMiddleware, roleMiddleware(['admin'])], adminController.delete_kegiatan);
 adminRouter.get('/api/absen/export', [authMiddleware, roleMiddleware(['admin'])], adminController.exportExcel);
 adminRouter.get('/api/absen/:id_kegiatan/get' , [authMiddleware, roleMiddleware(['admin'])], adminController.get_absensi)

@@ -33,6 +33,8 @@ const corsOptions = {
 };
 
 web.use('/assets', express.static(path.join(__dirname, '../../assets/upload')));
+web.use('/attachment', express.static(path.join(__dirname, '../../assets/attachment')))
+web.use('/avatar', express.static(path.join(__dirname, '../../assets/avatar')))
 
 
 web.use(cors(corsOptions));

@@ -72,7 +72,7 @@ const login = async(request)=>{
                 }
             }
         }
-    },createdAt : true
+    },createdAt : true,pfp : true
   }
 });
 
@@ -88,9 +88,8 @@ const login = async(request)=>{
         status : user.status,
         email : user.email,
         tim : user.member?.team?.nama_tim || 'null',
-        akun_dibuat : user.createdAt
-
-        
+        akun_dibuat : user.createdAt,
+        avatar : user.pfp     
     }
 
     if (!user) throw new responseError('401', 'Akun kredensial salah!');
@@ -324,6 +323,19 @@ const verifyOTPChangePassword = async (request) => {
   return jwtGenerated;
 };
 
+const uploadPfp = async(request)=>{
+    return prismaClient.user.update({
+      where : {
+        id : request.id
+      },data : {
+         pfp : request.pfp
+      },
+      select : {
+        pfp : true  
+      }
+    })
+}
+
 
 export default {
     register,
@@ -335,5 +347,6 @@ export default {
     checkPassword,
     otpForgetPassword,
     changePasswordFromForgetPassword,
-    verifyOTPChangePassword
+    verifyOTPChangePassword,
+    uploadPfp
 }
