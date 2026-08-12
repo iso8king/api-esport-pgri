@@ -193,9 +193,59 @@ const updateNameTeam = async(req,res,next)=>{
     }
 }
 
+const addBeritaFromBroguC = async(req,res,next) => {
+    try {
+        const request = req.body;
+        const result = await adminService.addBeritaFromBrogu(request);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const getBerita = async(req,res,next) => {
+    try {
+        const result = await adminService.getBerita();
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);
+    }
+}
+
+const updateBeritaC = async(req,res,next)=>{
+    try {
+        const request = req.body;
+        const id_berita = req.params.id_berita;
+
+        const result = await adminService.updateBerita(id_berita, request);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const deleteBeritaC = async(req,res,next) => {
+    try {
+        const id_berita = req.params.id_berita;
+
+        const result = await adminService.deleteBerita(id_berita);
+        res.status(200).json({
+            data : 'OK'
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
 
 
 export default{
+    getBerita,
     exportExcel,
     createKegiatan,
     getKegiatan,
@@ -211,4 +261,7 @@ export default{
     statistic,
     deleteTeam,
     updateNameTeam,
+    addBeritaFromBroguC,
+    updateBeritaC,
+    deleteBeritaC
 }

@@ -55,9 +55,13 @@ model Kegiatan{
   id String @id @db.VarChar(36) @default(uuid())
   nama_kegiatan String @db.VarChar(100)
   tanggal_kegiatan DateTime
-  jam String @db.VarChar(50)
+  jam_mulai String? @db.VarChar(50)
+  jam_selesai String? @db.VarChar(50)
+  lokasi String? @db.VarChar(255)
+  deskripsi String? @db.Text
   onlyTeam Boolean? @default(false)
   attachment String?
+  google_event_id String? @db.VarChar(255)
   absensi Absensi[]
   createdAt DateTime @default(now())
   updatedAt DateTime? @updatedAt
@@ -100,5 +104,12 @@ model TeamMember {
 
   @@index([teamId])
   @@map("teammember")
+}
+
+model Berita{
+  id String @id @default(uuid())
+  link String @db.Text
+  title String @db.Text
+  coverImage String @db.Text
 }
 

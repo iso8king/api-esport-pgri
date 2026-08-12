@@ -1,11 +1,12 @@
 import { prismaClient } from "../application/database.js";
 import { validate } from "../validation/validate.js";
 import { responseError } from "../error/response-error.js";
-import { addMemberValidation, createKegiatanValidation, getAllValidation, idKegiatanValidation, idTeamValidation, updateKegiatanValidation, updateTeamNameValidation } from "../validation/admin-validation.js";
+import { addBeritaValidation, addMemberValidation, createKegiatanValidation, getAllValidation, idKegiatanValidation, idTeamValidation, updateKegiatanValidation, updateTeamNameValidation } from "../validation/admin-validation.js";
 import { exportSheet } from "../application/excel.js";
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url';
+import { createCalendarEvent, deleteCalendarEvent, updateCalendarEvent } from "../application/calendar.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,8 +14,26 @@ const __dirname = path.dirname(__filename);
 const createKegiatan = async (request) => {
   request = validate(createKegiatanValidation, request);
 
+  const tanggal = new Date(request.tanggal_kegiatan).toISOString().split("T")[0];
+  const date_unify_start = new Date(`${tanggal}T${request.jam_mulai}:00`).toISOString();
+  const date_unify_end = new Date(`${tanggal}T${request.jam_selesai}:00`).toISOString();
+
+  const calendar_input = {
+    title : request.nama_kegiatan,
+    description : request.deskripsi,
+    startDateTime : date_unify_start,
+    endDateTime : date_unify_end,
+    location : request.lokasi
+  }
+
+  console.log(calendar_input);
+
+  const googleCalendarId = await createCalendarEvent(calendar_input);
+
+  request.google_event_id = googleCalendarId
+
   return prismaClient.kegiatan.create({
-    data: request,
+    data: request
   });
 };
 
@@ -59,13 +78,46 @@ const updateKegiatan = async (id_kegiatan, request) => {
   request.id = id_kegiatan;
   request = validate(updateKegiatanValidation, request);
   const data = {};
+  const jam = {};
 
-  const field = ["nama_kegiatan", "tanggal_kegiatan", "jam", 'onlyTeam', 'attachment'];
+  const field = ["nama_kegiatan", "tanggal_kegiatan", "jam_mulai","jam_selesai", 'deskripsi', 'lokasi',  'onlyTeam', 'attachment'];
 
   for (const f of field) {
     if (request[f] !== undefined && request[f] !== "undefined") {
-      data[f] = request[f];
+      if(f === "jam_mulai"){
+        const tanggal = new Date(request.tanggal_kegiatan).toISOString().split("T")[0];
+        const date_unify_start = new Date(`${tanggal}T${request.jam_mulai}:00`).toISOString();
+        jam[f]  = date_unify_start;
+        data[f] = request[f]
+      } else if(f === "jam_selesai"){
+        const tanggal = new Date(request.tanggal_kegiatan).toISOString().split("T")[0];
+        const date_unify_end = new Date(`${tanggal}T${request.jam_selesai}:00`).toISOString();
+        jam[f] = date_unify_end;
+        data[f] = request[f];
+      } else{
+        data[f] = request[f]
+      }
     }
+  }
+
+  const googleCalendarId = await prismaClient.kegiatan.findUnique({
+    where : {
+      id : request.id
+    }, select : {
+      google_event_id : true
+    }
+  })
+
+  try {
+    await updateCalendarEvent(googleCalendarId.google_event_id, {
+    title : data.nama_kegiatan,
+    description : data.deskripsi,
+    location : data.lokasi,
+    startDateTime : jam.jam_mulai,
+    endDateTime : jam.jam_selesai
+  })
+  } catch (e) {
+    console.log(e);    
   }
 
   return prismaClient.kegiatan.update({
@@ -78,6 +130,20 @@ const updateKegiatan = async (id_kegiatan, request) => {
 
 const deleteKegiatan = async (id_kegiatan) => {
   id_kegiatan = validate(idKegiatanValidation, id_kegiatan);
+
+  const kegiatan = await prismaClient.kegiatan.findUnique({
+    where : {
+      id : id_kegiatan
+    }, select : {
+      google_event_id : true
+    }
+  });
+
+  try {
+      await deleteCalendarEvent(kegiatan.google_event_id);
+  } catch (e) {
+    console.log(e)    
+  }
 
   const delKegiatan = await prismaClient.kegiatan.delete({
     where: {
@@ -303,7 +369,75 @@ const updateTeamName = async(id_team , request)=>{
   return team
 }
 
+const addBeritaFromBrogu = async(request) => {
+  request = validate(addBeritaValidation, request);
+
+  const response = await fetch(process.env.BROGU_URL + '/api/integrate', {
+    method : 'POST',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body : JSON.stringify(request)
+  })
+
+  const data = await response.json();
+
+  if (!data) throw new responseError(404, "Artikel Not Found!")
+
+  return prismaClient.berita.create({
+      data : {
+        ...data,
+        link : request.link
+      }
+  })
+}
+
+const getBerita = async(request) => {
+  return prismaClient.berita.findMany();
+}
+
+const updateBerita = async(id_berita, request) => {
+  request = validate(addBeritaValidation, request);
+
+  const response = await fetch(process.env.BROGU_URL + '/api/integrate', {
+    method : 'POST',
+    headers: {
+      'Content-Type' : 'application/json'
+    },
+    body : JSON.stringify(request)
+  })
+
+  const data = await response.json();
+
+  if (!data) throw new responseError(404, "Artikel Not Found!")
+
+  return prismaClient.berita.update({
+    where : {
+      id : id_berita
+    }, data : {
+      ...data,
+      link : request.link
+    }
+  })
+
+}
+
+const deleteBerita = async(id_berita) => {
+  const post = await prismaClient.berita.count({
+    where : {id : id_berita}
+  });
+
+  if(!post) throw new responseError(404, "Artikel Tidak Ditemukan!");
+
+  return prismaClient.berita.delete({
+    where : {
+      id : id_berita
+    }
+  })
+}
+
 export default {
+  updateBerita,
   exportExcel,
   createKegiatan,
   getKegiatan,
@@ -318,5 +452,8 @@ export default {
   removeMember,
   statistik,
   deleteTeam,
-  updateTeamName
+  updateTeamName,
+  addBeritaFromBrogu,
+  getBerita,
+  deleteBerita
 };

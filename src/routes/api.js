@@ -35,6 +35,9 @@ adminRouter.delete('/api/teams/:team_id/remove' , [authMiddleware , roleMiddlewa
 adminRouter.get('/api/statistik' , [authMiddleware, roleMiddleware(['admin'])] , adminController.statistic)
 adminRouter.delete('/api/teams/:id_team', [authMiddleware, roleMiddleware(['admin'])], adminController.deleteTeam)
 adminRouter.patch('/api/teams/:id_team', [authMiddleware, roleMiddleware(['admin'])], adminController.updateNameTeam)
+adminRouter.post('/api/berita/create', [authMiddleware, roleMiddleware(['admin'])], adminController.addBeritaFromBroguC)
+adminRouter.patch('/api/berita/:id_berita/update' , [authMiddleware, roleMiddleware(['admin'])], adminController.updateBeritaC)
+adminRouter.delete('/api/berita/:id_berita/delete' , [authMiddleware, roleMiddleware(['admin'])], adminController.deleteBeritaC)
 
 // Admin Settings Router
 adminRouter.post('/api/settings/hero', [authMiddleware, roleMiddleware(['admin']), uploadSetting.single("hero")], settingController.uploadHero);
