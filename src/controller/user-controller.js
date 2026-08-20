@@ -182,6 +182,37 @@ const uploadPfp = async(req,res,next)=>{
     }
 }
 
+const uploadFaceC = async(req,res,next) => {
+    try {
+        const result = await userService.uploadFace(req.file, req.user.id);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const loginFaceC = async(req,res,next) => {
+    try {
+        const result = await userService.loginFace(req.file, req.body.email);
+        res.cookie('accessToken', result.token_access, {
+             httpOnly: true,
+             secure: false,
+             sameSite: 'lax',
+             maxAge:  60 * 60 * 1000, 
+            path: '/'
+        });
+
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        console.error(e)
+        next(e);        
+    }
+}
+
 export default{
     register,
     login,
@@ -195,5 +226,7 @@ export default{
     sendOTPForgetPassword,
     verifyOTPForgetPassword,
     changePasswordFromForgetPassword,
-    uploadPfp
+    uploadPfp,
+    uploadFaceC,
+    loginFaceC
 }

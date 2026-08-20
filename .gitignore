@@ -6,3 +6,4 @@ assets/*
 !assets/upload/.gitkeep
 !assets/attachment/.gitkeep
 !assets/avatar/.gitkeep
+models/

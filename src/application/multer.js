@@ -52,6 +52,16 @@ const storage_pfp = multer.diskStorage({
     filename : (req, file, cb)=>{
         cb(null, req.user.username + path.extname(file.originalname));
     }
+})
+
+const storage_face = multer.diskStorage({
+    destination : (req,file, cb)=>{
+        cb(null, uploadDirAvatar);
+    },
+    filename : (req, file, cb)=>{
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        cb(null, uniqueSuffix + path.extname(file.originalname));
+    }
 }) 
 
 // Filter extensi
@@ -93,6 +103,14 @@ export const upload_pfp = multer({
     storage : storage_pfp,
     limits : {
         fileSize: 2 * 1024 * 1024
+    },
+    fileFilter : allowExtPfp
+})
+
+export const upload_face = multer({
+    storage : storage_face,
+    limits : {
+        fileSize : 10 * 1024 * 1024
     },
     fileFilter : allowExtPfp
 })

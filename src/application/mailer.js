@@ -12,7 +12,7 @@ export const sendOTP = async (email, otp) => {
     });
 
     await transporter.sendMail({
-      from: `"Perpustakaan Digital" <${process.env.EMAIL_USERNAME}>`,
+      from: `"Smegione Esport OTP" <${process.env.EMAIL_USERNAME}>`,
       to: email,
       subject: "Kode OTP Aktivasi Akun Esport Smegione",
       html: `
@@ -38,7 +38,7 @@ export const sendOTPForgetPassword = async (email, otp) => {
     });
 
     await transporter.sendMail({
-      from: `"Perpustakaan Digital" <${process.env.EMAIL_USERNAME}>`,
+      from: `"Smegione Esport OTP" <${process.env.EMAIL_USERNAME}>`,
       to: email,
       subject: "Kode OTP Reset Password Akun Esport Smegione",
       html: `

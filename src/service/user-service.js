@@ -6,6 +6,7 @@ import { changePassword, changePasswordForgetValidation, loginValidation, otpFor
 import { responseError } from "../error/response-error.js";
 import { stringify } from "uuid";
 import { sendOTP, sendOTPForgetPassword } from "../application/mailer.js";
+import fs from 'fs/promises'
 
 function generateJWT(data, secret_token, duration){
     return jwt.sign(data , secret_token, {expiresIn : duration})
@@ -336,6 +337,132 @@ const uploadPfp = async(request)=>{
     })
 }
 
+const uploadFace = async(file, id_user)  => {
+    const user = await prismaClient.user.count({
+      where : {
+        id : id_user
+      }
+    });
+
+    if(!user) throw new responseError(404, "User Not Found!");
+
+    try {
+    const fileBuffer = await fs.readFile(file.path);
+
+    const formData = new FormData();
+    formData.append(
+      "file",
+      new Blob([fileBuffer], { type: file.mimetype }),
+      file.originalname
+    );
+
+    const faceEmbedRes = await fetch(process.env.FACE_AUTH_URL + '/embed', {
+      method: "POST",
+      body: formData
+    });
+
+    if (!faceEmbedRes.ok) {
+      const err = await faceEmbedRes.json();
+      throw new responseError(faceEmbedRes.status, err.detail || "Gagal memproses wajah");
+    }
+
+    const faceEmbed = await faceEmbedRes.json();
+
+    if (faceEmbed.faces_detected > 1) {
+      throw new responseError(422, "Terdeteksi lebih dari 1 wajah, Ulangi Lagi");
+    }
+
+    return await prismaClient.user.update({
+      where: { id: id_user },
+      data: { faceEmbedding: faceEmbed.embedding }
+    });
+
+  } finally {
+    await fs.unlink(file.path).catch(() => {});
+  }
+}
+
+const loginFace = async(file, email) => {
+  const user = await prismaClient.user.findUnique({
+    where : {
+      email : email
+    }, select : {
+    faceEmbedding : true,
+    username: true,
+    nama: true,
+    role: true,
+    game_id: true,
+    server_id: true,
+    id: true,
+    email: true,
+    status: true,
+    pfp : true,
+    member : {
+        select : {
+            team : {
+                select : {
+                    nama_tim : true
+                }
+            }
+        }
+    },createdAt : true,pfp : true
+    }
+  });
+
+  if(!user) throw new responseError(404, "User Not Found!");
+
+  if(!user.faceEmbedding) throw new responseError(400, "User Belum melakukan registrasi wajah");
+
+  try {
+    const fileBuffer = await fs.readFile(file.path);
+
+    const formData = new FormData();
+    formData.append(
+      "file",
+      new Blob([fileBuffer], { type: file.mimetype }),
+      file.originalname
+    );
+    formData.append("stored_embedding", user.faceEmbedding.join(","));
+
+    const verifyRes = await fetch(process.env.FACE_AUTH_URL + '/verify', {
+      method: "POST",
+      body: formData
+    });
+
+    if (!verifyRes.ok) {
+      const err = await verifyRes.json();
+      throw new responseError(verifyRes.status, err.detail || "Gagal memverifikasi wajah");
+    }
+
+    const result = await verifyRes.json();
+
+    if (!result.is_match) {
+      throw new responseError(401, "Wajah tidak cocok");
+    }
+
+    const data_jwt = {
+      id : user.id,
+      email: user.email,
+      nama : user.nama,
+      role : user.role,
+      game_id : user.game_id,
+      server_id : user.server_id,
+      status : user.status,
+    }
+
+    const tokenAccess = generateJWT(data_jwt, process.env.ACCESS_TOKEN_SECRET, "1h");
+    const {faceEmbedding, ...safeData} = user;
+
+    return {
+      ...safeData,
+      similarity: result.similarity,
+      token_access : tokenAccess
+    };
+
+  } finally {
+    await fs.unlink(file.path).catch(() => {});
+  }
+}
 
 export default {
     register,
@@ -348,5 +475,7 @@ export default {
     otpForgetPassword,
     changePasswordFromForgetPassword,
     verifyOTPChangePassword,
-    uploadPfp
+    uploadPfp,
+    uploadFace,
+    loginFace
 }
