@@ -15,6 +15,7 @@ export const exportSheet = async(datas) => {
     sheet.columns = [
         { header: 'Waktu Absen', key: 'waktu', width: 25 }
         ,{header : "Nama" , key : 'nama' , width : 35},
+        {header : "Kelas" , key : 'kelas' , width : 35},
         {header : 'Deskripsi' , key : 'desc' , width : 50},
         {header : "Mood" , key : "mood" , width: 15},
         {header : "Bukti" , key : "bukti" , width : 50},
@@ -25,6 +26,7 @@ export const exportSheet = async(datas) => {
         sheet.addRow({ 
             waktu : waktuAbsen,
             nama : data.user.nama,
+            kelas : data.user.kelas,
             desc : data.deskripsi,
             mood : data.mood,
             bukti : data.bukti ? url + 'assets/' + data.bukti : '-'

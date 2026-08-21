@@ -230,19 +230,19 @@ const getAllTeam = async () => {
 const addingMember = async (request) => {
   request = validate(addMemberValidation, request);
 
-  const existingRoleMember = await prismaClient.teamMember.findFirst({
-    where: {
-      teamId: request.teamId,
-      role: request.role,
-      userId: {
-        not: request.userId,
-      },
-    },
-  });
+  // const existingRoleMember = await prismaClient.teamMember.findFirst({
+  //   where: {
+  //     teamId: request.teamId,
+  //     role: request.role,
+  //     userId: {
+  //       not: request.userId,
+  //     },
+  //   },
+  // });
 
-  if (existingRoleMember) {
-    throw new responseError(400, "Role ini sudah digunakan oleh anggota lain di tim ini!");
-  }
+  // if (existingRoleMember) {
+  //   throw new responseError(400, "Role ini sudah digunakan oleh anggota lain di tim ini!");
+  // }
 
   return prismaClient.teamMember.upsert({
     where: {
@@ -318,6 +318,7 @@ const exportExcel = async (id_kegiatan) => {
       user: {
         select: {
           nama: true,
+          kelas : true
         },
       },
       kegiatan: {

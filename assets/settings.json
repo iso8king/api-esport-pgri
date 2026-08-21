@@ -1,0 +1,31 @@
+{
+  "heroImage": "hero-1783443587263-960230301.jpg",
+  "aboutText": "Images, Videos, PDFs and audio files are supported. Create multi impressions and dynamic directs from the app. Take photos with the mobile app and save them in a note.",
+  "aboutImage": "about-1781622161225-981803039.png",
+  "gallery": [
+    {
+      "id": 1781622173846,
+      "title": "akuuu",
+      "description": "Deskripsi Galeri",
+      "image": "galleryItem-1781622173835-22574380.png"
+    },
+    {
+      "id": 1782231650598,
+      "title": "Foto Kegiatan",
+      "description": "Deskripsi Galeri",
+      "image": "galleryItem-1782231650592-535171134.jpg"
+    },
+    {
+      "id": 1782231662949,
+      "title": "Foto Kegiatan",
+      "description": "Deskripsi Galeri",
+      "image": "galleryItem-1782231662947-765283369.jpg"
+    },
+    {
+      "id": 1782231668799,
+      "title": "Foto Kegiatan",
+      "description": "Deskripsi Galeri",
+      "image": "galleryItem-1782231668792-851841994.jpg"
+    }
+  ]
+}

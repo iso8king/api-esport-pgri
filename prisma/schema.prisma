@@ -36,6 +36,7 @@ model User{
   username String @db.VarChar(100) @unique
   password String @db.VarChar(100) 
   nama String @db.VarChar(100)
+  kelas String? @db.VarChar(30)
   role roleUser
   game_id String
   server_id String @db.VarChar(5)

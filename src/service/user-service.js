@@ -8,99 +8,101 @@ import { stringify } from "uuid";
 import { sendOTP, sendOTPForgetPassword } from "../application/mailer.js";
 import fs from 'fs/promises'
 
-function generateJWT(data, secret_token, duration){
-    return jwt.sign(data , secret_token, {expiresIn : duration})
+function generateJWT(data, secret_token, duration) {
+  return jwt.sign(data, secret_token, { expiresIn: duration })
 }
 
 function generateOTP() {
   return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-const register = async(request)=>{
-    const user = validate(registerUserValidation , request);
-    const otp = generateOTP();
-    const otpHash = await bcrypt.hash(otp , 10);
-    user.otp = otpHash;
-    user.role = user?.role || "user"; // role default
-    user.role = user.role.toLowerCase()
-    console.log("masuk")
+const register = async (request) => {
+  const user = validate(registerUserValidation, request);
+  const otp = generateOTP();
+  const otpHash = await bcrypt.hash(otp, 10);
+  user.otp = otpHash;
+  user.role = user?.role || "user"; // role default
+  user.role = user.role.toLowerCase()
+  console.log("masuk")
 
-    // password
-    user.password = await bcrypt.hash(user.password, 10);
-    
-    await sendOTP(user.email, otp);
-    
-    const registerUser = await prismaClient.user.create({
-        data : user,
-        select: {
-            id : true,
-            username : true,
-            nama : true,
-            role : true,
-            game_id : true,
-            server_id : true
-        }
-    });
-    return registerUser;
+  // password
+  user.password = await bcrypt.hash(user.password, 10);
+
+  await sendOTP(user.email, otp);
+
+  const registerUser = await prismaClient.user.create({
+    data: user,
+    select: {
+      id: true,
+      username: true,
+      nama: true,
+      role: true,
+      game_id: true,
+      server_id: true,
+      kelas: true
+    }
+  });
+  return registerUser;
 };
 
-const login = async(request)=>{
-    const loginRequest = validate(loginValidation, request);
-    
+const login = async (request) => {
+  const loginRequest = validate(loginValidation, request);
 
-    const user = await prismaClient.user.findFirst({
-  where: {
-    OR: [
-      { username: loginRequest.username },
-      { email: loginRequest.username }
-    ]
-  },
-  select: {
-    password: true,
-    username: true,
-    nama: true,
-    role: true,
-    game_id: true,
-    server_id: true,
-    id: true,
-    email: true,
-    status: true,
-    member : {
-        select : {
-            team : {
-                select : {
-                    nama_tim : true
-                }
+
+  const user = await prismaClient.user.findFirst({
+    where: {
+      OR: [
+        { username: loginRequest.username },
+        { email: loginRequest.username }
+      ]
+    },
+    select: {
+      password: true,
+      username: true,
+      nama: true,
+      role: true,
+      game_id: true,
+      server_id: true,
+      id: true,
+      email: true,
+      status: true,
+      member: {
+        select: {
+          team: {
+            select: {
+              nama_tim: true
             }
+          }
         }
-    },createdAt : true,pfp : true
-  }
-});
-
-    
-
-    const data = {
-        username : user.username,
-        nama : user.nama,
-        role : user.role,
-        game_id : user.game_id,
-        server_id : user.server_id,
-        id : user.id,
-        status : user.status,
-        email : user.email,
-        tim : user.member?.team?.nama_tim || 'null',
-        akun_dibuat : user.createdAt,
-        avatar : user.pfp     
+      }, createdAt: true, pfp: true, kelas: true
     }
+  });
 
-    if (!user) throw new responseError('401', 'Akun kredensial salah!');
 
-    const passwordCheck = await bcrypt.compare(loginRequest.password, user.password);
-    if (!passwordCheck) throw new responseError(401, "Akun kredensial salah!");
 
-    const tokenAccess = generateJWT(data, process.env.ACCESS_TOKEN_SECRET, "1h");
-    data.token_access = tokenAccess;
-    return data
+  const data = {
+    username: user.username,
+    nama: user.nama,
+    role: user.role,
+    game_id: user.game_id,
+    server_id: user.server_id,
+    id: user.id,
+    status: user.status,
+    email: user.email,
+    tim: user.member?.team?.nama_tim || 'null',
+    akun_dibuat: user.createdAt,
+    avatar: user.pfp,
+    kelas : user.kelas
+  }
+
+  if (!user) throw new responseError('401', 'Akun kredensial salah!');
+
+  const passwordCheck = await bcrypt.compare(loginRequest.password, user.password);
+  if (!passwordCheck) throw new responseError(401, "Akun kredensial salah!");
+
+  const tokenAccess = generateJWT(data, process.env.ACCESS_TOKEN_SECRET, "1h");
+  data.token_access = tokenAccess;
+  return data
 };
 
 
@@ -109,7 +111,7 @@ const updateProfile = async (id_user, request) => {
   request = validate(updateUserValidation, request);
   const data = {};
 
-  const field = ['nama', 'email', 'game_id', 'server_id'];
+  const field = ['nama', 'email', 'game_id', 'server_id', 'kelas'];
   for (const f of field) {
     if (request[f] !== undefined) {
       data[f] = request[f];
@@ -124,7 +126,7 @@ const updateProfile = async (id_user, request) => {
 
     if (checkUsernameCooldown?.usernameUpdatedAt) {
       const cooldownParameter = new Date(checkUsernameCooldown.usernameUpdatedAt);
-      cooldownParameter.setDate(cooldownParameter.getDate() + 180); 
+      cooldownParameter.setDate(cooldownParameter.getDate() + 180);
 
       if (Date.now() >= cooldownParameter.getTime()) {
         data.username = request.username;
@@ -165,7 +167,7 @@ const verifyOTP = async (request) => {
     throw new responseError(404, "User or OTP Not Found!");
   }
 
-  const otpCheck = await bcrypt.compare(otpRequest.otp , user.otp);
+  const otpCheck = await bcrypt.compare(otpRequest.otp, user.otp);
 
   if (otpCheck === false) throw new responseError(400, "OTP wrong!");
 
@@ -182,108 +184,108 @@ const verifyOTP = async (request) => {
   return "Akun Berhasil Di Verifikasi";
 };
 
-const requestOTP= async(email)=>{
-    const otp = generateOTP();
-    const otpHash = await bcrypt.hash(otp , 10);
+const requestOTP = async (email) => {
+  const otp = generateOTP();
+  const otpHash = await bcrypt.hash(otp, 10);
 
-    await prismaClient.user.update({
-        where : {
-            email : email
-        },
-        data : {
-            otp : otpHash
-        }
-    })
+  await prismaClient.user.update({
+    where: {
+      email: email
+    },
+    data: {
+      otp: otpHash
+    }
+  })
 
-    await sendOTP(email , otp);
+  await sendOTP(email, otp);
 }
 
 
 // lanjut nanti aja buat change password
-const changePW = async(request , id_user)=>{
-    request = validate(changePassword, request);
-    const user = await prismaClient.user.findUnique({
-        where : {
-            id : id_user
-        },
-        select : {
-            password : true
-        }
-    });
-    
-    const passwordCheck = await bcrypt.compare(request.password, user.password);
-    if (!passwordCheck) throw new responseError(401, "Akun kredensial salah!");
-    request.password_new = await bcrypt.hash(request.password_new, 10);
-    
-    await prismaClient.user.update({
-        where : {
-            id : id_user
-        },
-        data : {
-            password : request.password_new
-        }
-    })
+const changePW = async (request, id_user) => {
+  request = validate(changePassword, request);
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: id_user
+    },
+    select: {
+      password: true
+    }
+  });
+
+  const passwordCheck = await bcrypt.compare(request.password, user.password);
+  if (!passwordCheck) throw new responseError(401, "Akun kredensial salah!");
+  request.password_new = await bcrypt.hash(request.password_new, 10);
+
+  await prismaClient.user.update({
+    where: {
+      id: id_user
+    },
+    data: {
+      password: request.password_new
+    }
+  })
 }
 
 const checkPassword = async (password, id_user) => {
-    if (!password) throw new responseError(400, "Password tidak boleh kosong");
-    const user = await prismaClient.user.findUnique({
-        where: {
-            id: id_user
-        },
-        select: {
-            password: true
-        }
-    });
-    
-    if (!user) throw new responseError(404, "User tidak ditemukan");
-    
-    const passwordCheck = await bcrypt.compare(password, user.password);
-    if (!passwordCheck) throw new responseError(401, "Password saat ini salah!");
+  if (!password) throw new responseError(400, "Password tidak boleh kosong");
+  const user = await prismaClient.user.findUnique({
+    where: {
+      id: id_user
+    },
+    select: {
+      password: true
+    }
+  });
+
+  if (!user) throw new responseError(404, "User tidak ditemukan");
+
+  const passwordCheck = await bcrypt.compare(password, user.password);
+  if (!passwordCheck) throw new responseError(401, "Password saat ini salah!");
 }
 
-const otpForgetPassword = async(request) =>{
-    request = validate(otpForgetPasswordValidation, request);
-    const searchUser = await prismaClient.user.count({
-        where : {
-            email : request.email
-        }
-    });
+const otpForgetPassword = async (request) => {
+  request = validate(otpForgetPasswordValidation, request);
+  const searchUser = await prismaClient.user.count({
+    where: {
+      email: request.email
+    }
+  });
 
-    if(!searchUser) throw new responseError(404, "Email Not Found!");
+  if (!searchUser) throw new responseError(404, "Email Not Found!");
 
-    const otp = generateOTP();
-    const otpHash = await bcrypt.hash(otp , 10);
-    const saveOTP = await prismaClient.user.update({
-        where : {
-            email : request.email
-        },
-        data :{
-            otp : otpHash,
-        },
-        select : {
-            email : true
-        }
-    });
-    
-    await sendOTPForgetPassword(request.email, otp);
+  const otp = generateOTP();
+  const otpHash = await bcrypt.hash(otp, 10);
+  const saveOTP = await prismaClient.user.update({
+    where: {
+      email: request.email
+    },
+    data: {
+      otp: otpHash,
+    },
+    select: {
+      email: true
+    }
+  });
+
+  await sendOTPForgetPassword(request.email, otp);
 }
 
-const changePasswordFromForgetPassword = async(cookie,request)=>{
-    try {
+const changePasswordFromForgetPassword = async (cookie, request) => {
+  try {
     const decode = jwt.verify(cookie, process.env.ACCESS_TOKEN_SECRET);
     request = validate(changePasswordForgetValidation, request);
     request.password = await bcrypt.hash(request.password, 10);
     return prismaClient.user.update({
-        where : {
-            email : decode.email
-        },data : {
-            password : request.password
-        }
+      where: {
+        email: decode.email
+      }, data: {
+        password: request.password
+      }
     })
-    } catch (e) {
-        throw new responseError(501, e);  // jangan di tampilin   
-    }
+  } catch (e) {
+    throw new responseError(501, e);  // jangan di tampilin   
+  }
 }
 
 const verifyOTPChangePassword = async (request) => {
@@ -304,11 +306,11 @@ const verifyOTPChangePassword = async (request) => {
     throw new responseError(404, "User or OTP Not Found!");
   }
 
-  const otpCheck = await bcrypt.compare(otpRequest.otp , user.otp);
+  const otpCheck = await bcrypt.compare(otpRequest.otp, user.otp);
 
   if (otpCheck === false) throw new responseError(400, "OTP wrong!");
 
-  const jwtGenerated = generateJWT(otpRequest , process.env.ACCESS_TOKEN_SECRET, '1h');
+  const jwtGenerated = generateJWT(otpRequest, process.env.ACCESS_TOKEN_SECRET, '1h');
 
   await prismaClient.user.update({
     where: {
@@ -320,33 +322,33 @@ const verifyOTPChangePassword = async (request) => {
     },
   });
 
-  
+
   return jwtGenerated;
 };
 
-const uploadPfp = async(request)=>{
-    return prismaClient.user.update({
-      where : {
-        id : request.id
-      },data : {
-         pfp : request.pfp
-      },
-      select : {
-        pfp : true  
-      }
-    })
+const uploadPfp = async (request) => {
+  return prismaClient.user.update({
+    where: {
+      id: request.id
+    }, data: {
+      pfp: request.pfp
+    },
+    select: {
+      pfp: true
+    }
+  })
 }
 
-const uploadFace = async(file, id_user)  => {
-    const user = await prismaClient.user.count({
-      where : {
-        id : id_user
-      }
-    });
+const uploadFace = async (file, id_user) => {
+  const user = await prismaClient.user.count({
+    where: {
+      id: id_user
+    }
+  });
 
-    if(!user) throw new responseError(404, "User Not Found!");
+  if (!user) throw new responseError(404, "User Not Found!");
 
-    try {
+  try {
     const fileBuffer = await fs.readFile(file.path);
 
     const formData = new FormData();
@@ -378,40 +380,40 @@ const uploadFace = async(file, id_user)  => {
     });
 
   } finally {
-    await fs.unlink(file.path).catch(() => {});
+    await fs.unlink(file.path).catch(() => { });
   }
 }
 
-const loginFace = async(file, email) => {
+const loginFace = async (file, email) => {
   const user = await prismaClient.user.findUnique({
-    where : {
-      email : email
-    }, select : {
-    faceEmbedding : true,
-    username: true,
-    nama: true,
-    role: true,
-    game_id: true,
-    server_id: true,
-    id: true,
-    email: true,
-    status: true,
-    pfp : true,
-    member : {
-        select : {
-            team : {
-                select : {
-                    nama_tim : true
-                }
+    where: {
+      email: email
+    }, select: {
+      faceEmbedding: true,
+      username: true,
+      nama: true,
+      role: true,
+      game_id: true,
+      server_id: true,
+      id: true,
+      email: true,
+      status: true,
+      pfp: true,
+      member: {
+        select: {
+          team: {
+            select: {
+              nama_tim: true
             }
+          }
         }
-    },createdAt : true,pfp : true
+      }, createdAt: true, pfp: true
     }
   });
 
-  if(!user) throw new responseError(404, "User Not Found!");
+  if (!user) throw new responseError(404, "User Not Found!");
 
-  if(!user.faceEmbedding) throw new responseError(400, "User Belum melakukan registrasi wajah");
+  if (!user.faceEmbedding) throw new responseError(400, "User Belum melakukan registrasi wajah");
 
   try {
     const fileBuffer = await fs.readFile(file.path);
@@ -441,41 +443,41 @@ const loginFace = async(file, email) => {
     }
 
     const data_jwt = {
-      id : user.id,
+      id: user.id,
       email: user.email,
-      nama : user.nama,
-      role : user.role,
-      game_id : user.game_id,
-      server_id : user.server_id,
-      status : user.status,
+      nama: user.nama,
+      role: user.role,
+      game_id: user.game_id,
+      server_id: user.server_id,
+      status: user.status,
     }
 
     const tokenAccess = generateJWT(data_jwt, process.env.ACCESS_TOKEN_SECRET, "1h");
-    const {faceEmbedding, ...safeData} = user;
+    const { faceEmbedding, ...safeData } = user;
 
     return {
       ...safeData,
       similarity: result.similarity,
-      token_access : tokenAccess
+      token_access: tokenAccess
     };
 
   } finally {
-    await fs.unlink(file.path).catch(() => {});
+    await fs.unlink(file.path).catch(() => { });
   }
 }
 
 export default {
-    register,
-    login,
-    updateProfile,
-    verifyOTP,
-    requestOTP,
-    changePW,
-    checkPassword,
-    otpForgetPassword,
-    changePasswordFromForgetPassword,
-    verifyOTPChangePassword,
-    uploadPfp,
-    uploadFace,
-    loginFace
+  register,
+  login,
+  updateProfile,
+  verifyOTP,
+  requestOTP,
+  changePW,
+  checkPassword,
+  otpForgetPassword,
+  changePasswordFromForgetPassword,
+  verifyOTPChangePassword,
+  uploadPfp,
+  uploadFace,
+  loginFace
 }
