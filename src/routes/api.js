@@ -3,7 +3,7 @@ import userController from '../controller/user-controller.js'
 import { authMiddleware, roleMiddleware } from '../middleware/auth-middleware.js'
 import adminController from '../controller/admin-controller.js';
 import siswaController from '../controller/siswa-controller.js';
-import { upload, upload_attachment, upload_pfp, uploadSetting } from '../application/multer.js';
+import { upload, upload_attachment, upload_face, upload_pfp, uploadSetting } from '../application/multer.js';
 import settingController from '../controller/setting-controller.js';
 
 const userRouter = express.Router();
@@ -17,7 +17,9 @@ userRouter.post('/api/users/verify', authMiddleware, userController.verifyOTP)
 userRouter.post('/api/users/request/otp', authMiddleware , userController.requestotp)
 userRouter.patch('/api/users/update/password' , authMiddleware , userController.changePassword)
 userRouter.post('/api/users/check-password' , authMiddleware , userController.checkPassword)
-userRouter.patch('/api/users/upload/pfp', [authMiddleware, upload_pfp.single('avatar')], userController.uploadPfp)
+userRouter.patch('/api/users/upload/pfp', [authMiddleware, upload_pfp.single('avatar')], userController.uploadPfp);
+userRouter.post('/api/users/upload/face', [authMiddleware, upload_face.single('face')], userController.uploadFaceC);
+
 
 // Admin Router
 adminRouter.post('/api/kegiatan/create', [authMiddleware, roleMiddleware(['admin']), upload_attachment.single("attachment")], adminController.createKegiatan)

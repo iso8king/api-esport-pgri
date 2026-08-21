@@ -14,6 +14,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+  
+  
 
   backend:
     build: .
@@ -27,6 +29,16 @@ services:
     depends_on:
       mysql:
         condition: service_healthy
+      face-auth:
+        condition: service_started
+  
+  face-auth:
+    image : face-service
+    ports:
+      - "6010:6010"
+    volumes:
+      - ./models:/root/.insightface/models
+
 
 volumes:
   mysql_data:
