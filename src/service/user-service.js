@@ -92,7 +92,7 @@ const login = async (request) => {
     tim: user.member?.team?.nama_tim || 'null',
     akun_dibuat: user.createdAt,
     avatar: user.pfp,
-    kelas : user.kelas
+    kelas: user.kelas
   }
 
   if (!user) throw new responseError('401', 'Akun kredensial salah!');
@@ -407,7 +407,7 @@ const loginFace = async (file, email) => {
             }
           }
         }
-      }, createdAt: true, pfp: true
+      }, createdAt: true, pfp: true, kelas : true
     }
   });
 
@@ -443,13 +443,18 @@ const loginFace = async (file, email) => {
     }
 
     const data_jwt = {
-      id: user.id,
-      email: user.email,
+      username: user.username,
       nama: user.nama,
       role: user.role,
       game_id: user.game_id,
       server_id: user.server_id,
+      id: user.id,
       status: user.status,
+      email: user.email,
+      tim: user.member?.team?.nama_tim || 'null',
+      akun_dibuat: user.createdAt,
+      avatar: user.pfp,
+      kelas: user.kelas
     }
 
     const tokenAccess = generateJWT(data_jwt, process.env.ACCESS_TOKEN_SECRET, "1h");
