@@ -384,7 +384,7 @@ const uploadFace = async (file, id_user) => {
   }
 }
 
-const loginFace = async (file, email) => {
+const loginFace = async (files, email) => {
   const user = await prismaClient.user.findUnique({
     where: {
       email: email
@@ -407,7 +407,7 @@ const loginFace = async (file, email) => {
             }
           }
         }
-      }, createdAt: true, pfp: true, kelas : true
+      }, createdAt: true, kelas : true
     }
   });
 
@@ -416,14 +416,17 @@ const loginFace = async (file, email) => {
   if (!user.faceEmbedding) throw new responseError(400, "User Belum melakukan registrasi wajah");
 
   try {
-    const fileBuffer = await fs.readFile(file.path);
-
     const formData = new FormData();
-    formData.append(
-      "file",
-      new Blob([fileBuffer], { type: file.mimetype }),
-      file.originalname
-    );
+
+    for (const file of files) {
+      const fileBuffer = await fs.readFile(file.path);
+      formData.append(
+        "files",
+        new Blob([fileBuffer], { type: file.mimetype }),
+        file.originalname
+      );
+    }
+
     formData.append("stored_embedding", user.faceEmbedding.join(","));
 
     const verifyRes = await fetch(process.env.FACE_AUTH_URL + '/verify', {
@@ -437,6 +440,10 @@ const loginFace = async (file, email) => {
     }
 
     const result = await verifyRes.json();
+
+    if (!result.liveness_passed) {
+      throw new responseError(401, "Liveness check gagal, pastikan kamu berkedip saat verifikasi");
+    }
 
     if (!result.is_match) {
       throw new responseError(401, "Wajah tidak cocok");
@@ -467,7 +474,9 @@ const loginFace = async (file, email) => {
     };
 
   } finally {
-    await fs.unlink(file.path).catch(() => { });
+    for (const file of files) {
+      await fs.unlink(file.path).catch(() => {});
+    }
   }
 }
 
