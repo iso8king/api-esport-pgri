@@ -63,6 +63,18 @@ const getAllKegiatan = async (request) => {
   });
 
   const totalItems = await prismaClient.kegiatan.count();
+  const totalTeamOnly = await prismaClient.kegiatan.count({
+    where : {
+      onlyTeam : true
+    }
+  });
+
+  const totalPublic = totalItems - totalTeamOnly;
+
+  const kegiatanTypeTotal = {
+    totalTeamOnly,
+    totalPublic
+  }
 
   return {
     paging: {
@@ -71,6 +83,7 @@ const getAllKegiatan = async (request) => {
       totalPage: Math.ceil(totalItems / request.size),
     },
     data: kegiatan,
+    kegiatanTypeTotal
   };
 };
 

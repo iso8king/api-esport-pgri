@@ -5,7 +5,7 @@ import { publicRouter } from "../routes/public-api.js";
 import { errorMiddleware } from "../middleware/error-middleware.js";
 import cors from "cors";
 import path from 'path'
-import { adminRouter, siswaRouter, userRouter } from "../routes/api.js";
+import { adminRouter, hubRouter, siswaRouter, userRouter } from "../routes/api.js";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 
@@ -44,6 +44,7 @@ web.use(publicRouter);
 web.use(userRouter);
 web.use(adminRouter);
 web.use(siswaRouter);
+web.use(hubRouter);
 
 web.use(errorMiddleware)
 
