@@ -19,8 +19,9 @@ const getThreadListC = async(req,res,next) => {
         const request = {};
         request.size = req.query.size || 10;
         request.page = req.query.page || 1;
+        const id_user = req.user.id;
 
-        const result = await hubService.getThreadList(request);
+        const result = await hubService.getThreadList(request, id_user);
         res.status(200).json({
             data : result
         })
@@ -31,10 +32,11 @@ const getThreadListC = async(req,res,next) => {
 
 const getThreadC = async(req,res,next) => {
     try {
-        const pageReplies = Number(req.query.page);
+        const pageReplies = Number(req.query.page) || 1;
         const id_thread = req.params.id_thread;
+        const id_user = req.user.id;
 
-        const result = await hubService.getThread(id_thread, pageReplies);
+        const result = await hubService.getThread(id_thread, pageReplies, id_user);
         res.status(200).json({
             data : result
         })
@@ -58,9 +60,40 @@ const createReplyThreadC = async(req,res,next) => {
     }
 }
 
+const createThreadLikeC = async(req,res,next) => {
+    try {
+        const id_user = req.user.id;
+        const thread_id = req.params.id_thread;
+
+        const result = await hubService.createThreadLike(thread_id, id_user);
+        res.status(200).json({
+            data : 'OK'
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const createThreadReplyLikeC = async(req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const thread_id = req.params.id_thread;
+        const reply_id = req.params.id_reply;
+
+        const result = await hubService.createThreadReplyLike(thread_id, userId, reply_id);
+        res.status(200).json({
+            data : 'OK'
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
 export default{
     createThreadC,
     getThreadListC,
     getThreadC,
-    createReplyThreadC
+    createReplyThreadC,
+    createThreadLikeC,
+    createThreadReplyLikeC
 }

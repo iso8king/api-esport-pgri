@@ -57,9 +57,11 @@ siswaRouter.get('/api/absen/get/complete', [authMiddleware, roleMiddleware(['use
 
 // Hub Router
 hubRouter.post('/api/hub/threads/create', [authMiddleware], hubController.createThreadC);
-hubRouter.get('/api/hub/threads', hubController.getThreadListC)
-hubRouter.get('/api/hub/thread/:id_thread', hubController.getThreadC)
-hubRouter.post('/api/hub/:id_thread/reply', [authMiddleware], hubController.createReplyThreadC)
+hubRouter.get('/api/hub/threads', [authMiddleware],hubController.getThreadListC)
+hubRouter.get('/api/hub/threads/:id_thread',[authMiddleware], hubController.getThreadC)
+hubRouter.post('/api/hub/threads/:id_thread/reply', [authMiddleware], hubController.createReplyThreadC)
+hubRouter.post('/api/hub/threads/:id_thread/like', [ authMiddleware ], hubController.createThreadLikeC);
+hubRouter.post('/api/hub/threads/:id_thread/reply/:id_reply/like', authMiddleware, hubController.createThreadReplyLikeC)
 
 export{
     userRouter,

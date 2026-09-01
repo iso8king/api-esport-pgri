@@ -1,7 +1,7 @@
 import { prismaClient } from "../application/database.js";
 import { validate } from "../validation/validate.js";
 import { responseError } from "../error/response-error.js";
-import { createReplyValidation, createThreadValidation, idThreadValidation } from "../validation/hub-validation.js";
+import { createReplyValidation, createThreadValidation, idThreadValidation, threadIdValidation } from "../validation/hub-validation.js";
 import { transformDocument } from "@prisma/client/runtime/index.js";
 
 const createThread = async(id_user,request) => {
@@ -17,7 +17,7 @@ const createThread = async(id_user,request) => {
     })
 }
 
-const getThreadList = async(request) => {
+const getThreadList = async(request, id_user) => {
     const skip = (request.page - 1) * request.size;
     const size = request.size;
 
@@ -30,12 +30,14 @@ const getThreadList = async(request) => {
         select : {
             id : true,
             title : true, 
+            content : true,
             createdAt : true,
             pinned : true,
             author : {
                 select : {
                     id : true,
-                    nama : true
+                    nama : true,
+                    pfp : true
                 }
             },
             _count : {
@@ -43,6 +45,12 @@ const getThreadList = async(request) => {
                     likes : true,
                     replies : true
                 }
+            },
+            likes : {
+                where : {
+                    userId : id_user
+                }, select : {id : true},
+                take : 1
             }
         }
     });
@@ -59,7 +67,7 @@ const getThreadList = async(request) => {
     }
 }
 
-const getThread = async(id_thread, page) => {
+const getThread = async(id_thread, page, id_user) => {
     id_thread = validate(idThreadValidation, id_thread);
 
     const thread = await prismaClient.thread.findUnique({
@@ -73,7 +81,8 @@ const getThread = async(id_thread, page) => {
             author : {
                 select : {
                     id : true,
-                    nama : true
+                    nama : true,
+                    pfp : true
                 }
             }, _count : {
                 select : {
@@ -81,7 +90,12 @@ const getThread = async(id_thread, page) => {
                     replies : true
                 }
             }, createdAt : true,
-            updatedAt : true
+            updatedAt : true,
+            likes : {
+                where : { userId : id_user},
+                select : {id : true},
+                take: 1
+            }
         }
     });
 
@@ -98,9 +112,20 @@ const getThread = async(id_thread, page) => {
             author : {
                 select : {
                     id : true,
-                    nama : true
+                    nama : true,
+                    pfp : true
                 }
-            },createdAt : true
+            },createdAt : true,
+            likes : {
+                where : {userId : id_user},
+                select : {id : true},
+                take : 1
+            },
+            _count : {
+                select : {
+                    likes : true
+                }
+            }
         }
     });
 
@@ -134,11 +159,62 @@ const createReplyThread = async(request, id_author) => {
     });
 }
 
+const createThreadLike = async(thread_id, user_id) => {
+    thread_id = validate(threadIdValidation, thread_id);
+
+    const thread = await prismaClient.thread.count({
+        where : {
+            id : thread_id
+        }
+    });
+
+    if(!thread) throw new responseError(404, "Thread Not Found!");
+
+    return prismaClient.threadLike.create({
+        data : {
+            threadId : thread_id,
+            userId : user_id
+        }
+    });
+}
+
+const createThreadReplyLike = async(threadId, userId, replyId) =>{
+    console.log({
+        threadId, replyId, userId
+    })
+    threadId = validate(threadIdValidation, threadId);
+    replyId = Number(replyId);
+
+    const thread = await prismaClient.thread.count({
+        where : {
+            id : threadId
+        }
+    });
+
+    if(!thread) throw new responseError(404, "Thread Not Found!");
+
+    const reply = await prismaClient.threadReply.count({
+        where : {
+            id : replyId
+        }
+    });
+
+    if(!reply) throw new responseError(404, "Thread Reply Not Found!");
+
+    return prismaClient.replyLike.create({
+        data : {
+            reply: { connect: { id: replyId } },
+            user: { connect: { id: userId } }
+        }
+    });
+}
 
 
 export default{
     createThread,
     getThreadList,
     getThread,
-    createReplyThread
+    createReplyThread,
+    createThreadLike,
+    createThreadReplyLike
 }

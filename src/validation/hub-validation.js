@@ -11,5 +11,7 @@ export const idThreadValidation = Joi.string().max(36);
 export const createReplyValidation = Joi.object({
     threadId : Joi.string().max(36).min(1).required(),
     content : Joi.string().min(1).required()
-})
+});
+
+export const threadIdValidation = Joi.string().max(36);
 
