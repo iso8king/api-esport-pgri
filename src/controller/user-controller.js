@@ -195,7 +195,7 @@ const uploadFaceC = async(req,res,next) => {
 
 const loginFaceC = async(req,res,next) => {
     try {
-        const result = await userService.loginFace(req.file, req.body.email);
+        const result = await userService.loginFace(req.files, req.body.email);
         res.cookie('accessToken', result.token_access, {
              httpOnly: true,
              secure: false,

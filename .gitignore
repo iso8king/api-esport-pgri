@@ -1,6 +1,10 @@
 node_modules
 .env
-assets/*
+*.pdf
+*.png
+*.JPG
+*.jpg
+*.xlsx
 !assets/.gitkeep
 !assets/excel/.gitkeep
 !assets/upload/.gitkeep

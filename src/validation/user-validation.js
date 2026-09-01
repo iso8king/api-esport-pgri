@@ -7,7 +7,8 @@ export const registerUserValidation = Joi.object({
     nama : Joi.string().max(100).required(),
     role : Joi.string().valid("admin" , 'user'),
     game_id : Joi.string().required(),
-    server_id : Joi.string().required().max(5)
+    server_id : Joi.string().required().max(5),
+    kelas : Joi.string().min(1).max(30).required()
 })
 
 export const loginValidation = Joi.object({
@@ -20,7 +21,8 @@ export const updateUserValidation = Joi.object({
     nama : Joi.string().max(100).optional(),
     game_id : Joi.string().max(100).optional(),
     server_id : Joi.string().max(5).optional(),
-    username : Joi.string().max(100).optional()
+    username : Joi.string().max(100).optional(),
+    kelas : Joi.string().min(1).max(30).optional()
 })
 
 export const changePassword = Joi.object({

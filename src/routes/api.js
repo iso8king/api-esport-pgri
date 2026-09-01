@@ -5,10 +5,12 @@ import adminController from '../controller/admin-controller.js';
 import siswaController from '../controller/siswa-controller.js';
 import { upload, upload_attachment, upload_face, upload_pfp, uploadSetting } from '../application/multer.js';
 import settingController from '../controller/setting-controller.js';
+import hubController from '../controller/hub-controller.js';
 
 const userRouter = express.Router();
 const adminRouter = express.Router();
 const siswaRouter = express.Router();
+const hubRouter = express.Router()
 
 userRouter.delete('/api/users/logout' , [authMiddleware] , userController.logout);
 userRouter.get('/api/users/current' , [authMiddleware] , userController.getUser)
@@ -52,8 +54,18 @@ adminRouter.delete('/api/settings/gallery/:id', [authMiddleware, roleMiddleware(
 siswaRouter.post('/api/absen/:id_kegiatan/create', [authMiddleware, roleMiddleware(['user']), upload.single("bukti")], siswaController.createAbsensi);
 siswaRouter.get('/api/absen/get/complete', [authMiddleware, roleMiddleware(['user'])] ,siswaController.getUserAbsen)
 
+
+// Hub Router
+hubRouter.post('/api/hub/threads/create', [authMiddleware], hubController.createThreadC);
+hubRouter.get('/api/hub/threads', [authMiddleware],hubController.getThreadListC)
+hubRouter.get('/api/hub/threads/:id_thread',[authMiddleware], hubController.getThreadC)
+hubRouter.post('/api/hub/threads/:id_thread/reply', [authMiddleware], hubController.createReplyThreadC)
+hubRouter.post('/api/hub/threads/:id_thread/like', [ authMiddleware ], hubController.createThreadLikeC);
+hubRouter.post('/api/hub/threads/:id_thread/reply/:id_reply/like', authMiddleware, hubController.createThreadReplyLikeC)
+
 export{
     userRouter,
     adminRouter,
-    siswaRouter
+    siswaRouter,
+    hubRouter
 }

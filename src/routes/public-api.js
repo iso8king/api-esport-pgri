@@ -15,7 +15,7 @@ publicRouter.post('/api/otp/forget' , userController.sendOTPForgetPassword)
 publicRouter.post('/api/otp/forget/verify',  userController.verifyOTPForgetPassword)
 publicRouter.post('/api/forget/change' , userController.changePasswordFromForgetPassword)
 publicRouter.get('/api/berita/get', adminController.getBerita)
-publicRouter.post('/api/users/login/face', upload_face.single("file"),userController.loginFaceC)
+publicRouter.post('/api/users/login/face', upload_face.array("files", 10),userController.loginFaceC)
 
 export{
     publicRouter

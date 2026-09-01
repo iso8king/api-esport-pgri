@@ -63,6 +63,18 @@ const getAllKegiatan = async (request) => {
   });
 
   const totalItems = await prismaClient.kegiatan.count();
+  const totalTeamOnly = await prismaClient.kegiatan.count({
+    where : {
+      onlyTeam : true
+    }
+  });
+
+  const totalPublic = totalItems - totalTeamOnly;
+
+  const kegiatanTypeTotal = {
+    totalTeamOnly,
+    totalPublic
+  }
 
   return {
     paging: {
@@ -71,6 +83,7 @@ const getAllKegiatan = async (request) => {
       totalPage: Math.ceil(totalItems / request.size),
     },
     data: kegiatan,
+    kegiatanTypeTotal
   };
 };
 
@@ -230,19 +243,19 @@ const getAllTeam = async () => {
 const addingMember = async (request) => {
   request = validate(addMemberValidation, request);
 
-  const existingRoleMember = await prismaClient.teamMember.findFirst({
-    where: {
-      teamId: request.teamId,
-      role: request.role,
-      userId: {
-        not: request.userId,
-      },
-    },
-  });
+  // const existingRoleMember = await prismaClient.teamMember.findFirst({
+  //   where: {
+  //     teamId: request.teamId,
+  //     role: request.role,
+  //     userId: {
+  //       not: request.userId,
+  //     },
+  //   },
+  // });
 
-  if (existingRoleMember) {
-    throw new responseError(400, "Role ini sudah digunakan oleh anggota lain di tim ini!");
-  }
+  // if (existingRoleMember) {
+  //   throw new responseError(400, "Role ini sudah digunakan oleh anggota lain di tim ini!");
+  // }
 
   return prismaClient.teamMember.upsert({
     where: {
@@ -318,6 +331,7 @@ const exportExcel = async (id_kegiatan) => {
       user: {
         select: {
           nama: true,
+          kelas : true
         },
       },
       kegiatan: {

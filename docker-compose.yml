@@ -1,43 +1,62 @@
 services:
+
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: 
+      MYSQL_ROOT_PASSWORD:
       MYSQL_DATABASE: db_esport
       MYSQL_USER: esport_user
       MYSQL_PASSWORD: 4nakpadan7
+
     volumes:
       - mysql_data:/var/lib/mysql
+
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 5s
       timeout: 5s
       retries: 10
-  
-  
+
+
+  face-auth:
+    image: face-service
+    restart: unless-stopped
+
+    ports:
+      - "6010:6010"
+
+    volumes:
+      - ./models:/root/.insightface/models:ro
+
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:6010/docs', timeout=3)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
 
   backend:
     build: .
     restart: unless-stopped
-    ports: 
+
+    ports:
       - "9999:9999"
       - "5555:5555"
-    env_file: .env
+
+    env_file:
+      - .env
+
     volumes:
       - ./assets:/app/assets
+
     depends_on:
       mysql:
         condition: service_healthy
+
       face-auth:
-        condition: service_started
-  
-  face-auth:
-    image : face-service
-    ports:
-      - "6010:6010"
-    volumes:
-      - ./models:/root/.insightface/models
+        condition: service_healthy
 
 
 volumes:
