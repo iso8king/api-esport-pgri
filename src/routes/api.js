@@ -3,7 +3,7 @@ import userController from '../controller/user-controller.js'
 import { authMiddleware, roleMiddleware } from '../middleware/auth-middleware.js'
 import adminController from '../controller/admin-controller.js';
 import siswaController from '../controller/siswa-controller.js';
-import { upload, upload_attachment, upload_face, upload_pfp, uploadSetting } from '../application/multer.js';
+import { upload, upload_attachment, upload_face, upload_pfp, upload_tierlist, uploadSetting } from '../application/multer.js';
 import settingController from '../controller/setting-controller.js';
 import hubController from '../controller/hub-controller.js';
 
@@ -62,6 +62,11 @@ hubRouter.get('/api/hub/threads/:id_thread',[authMiddleware], hubController.getT
 hubRouter.post('/api/hub/threads/:id_thread/reply', [authMiddleware], hubController.createReplyThreadC)
 hubRouter.post('/api/hub/threads/:id_thread/like', [ authMiddleware ], hubController.createThreadLikeC);
 hubRouter.post('/api/hub/threads/:id_thread/reply/:id_reply/like', authMiddleware, hubController.createThreadReplyLikeC)
+hubRouter.post('/api/hub/tierlist/create', [authMiddleware, upload_tierlist.single("image")], hubController.createTierlistC)
+hubRouter.get('/api/hub/tierlist/:id_tierlist' , authMiddleware, hubController.getTierlistC)
+hubRouter.get('/api/hub/tierlist' , authMiddleware, hubController.getTierlistAllC)
+hubRouter.post('/api/hub/tierlist/:id_tierlist/reply', authMiddleware, hubController.createReplyTierlistC)
+hubRouter.post('/api/hub/tierlist/:id_tierlist/vote', authMiddleware, hubController.voteTierlistC)
 
 export{
     userRouter,

@@ -64,6 +64,15 @@ const storage_face = multer.diskStorage({
     }
 }) 
 
+const storage_tierlist = multer.diskStorage({
+    destination : (req,file, cb)=>{
+        cb(null, uploadDir);
+    },
+    filename : (req, file, cb)=>{
+        cb(null, req.user.username + "_tierlist_" + Date.now() + path.extname(file.originalname));
+    }
+}) 
+
 // Filter extensi
 const allowExt = (req,file,cb)=>{
     const allowMimes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
@@ -111,6 +120,14 @@ export const upload_face = multer({
     storage : storage_face,
     limits : {
         fileSize : 10 * 1024 * 1024
+    },
+    fileFilter : allowExtPfp
+})
+
+export const upload_tierlist = multer({
+    storage: storage_tierlist,
+    limits : {
+        fileSize : 5 * 1024 * 1024
     },
     fileFilter : allowExtPfp
 })

@@ -15,3 +15,13 @@ export const createReplyValidation = Joi.object({
 
 export const threadIdValidation = Joi.string().max(36);
 
+export const createTierlistValidation = Joi.object({
+    content : Joi.string().min(1).required()
+});
+
+export const createCommentTierlistValidation = createTierlistValidation
+
+export const voteTierlistValidation = Joi.object({
+    value : Joi.number().required().valid(0, -1, 1),
+    id_tierlist : Joi.number().min(1).required()
+})

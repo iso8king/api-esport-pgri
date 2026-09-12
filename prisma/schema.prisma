@@ -59,6 +59,9 @@ model User{
   threadLikes ThreadLike[]
   replyLikes  ReplyLike[]
   reports     Report[]
+  tierlists       Tierlist[]
+  tierlistLikes   TierlistLike[]
+  tierlistReplies TierlistReply[]
   member TeamMember?
 
   @@map("users")
@@ -198,5 +201,46 @@ model Report {
   reply ThreadReply? @relation(fields: [replyId], references: [id], onDelete: Cascade)
 
   @@map("reports")
+}
+
+model Tierlist {
+  id Int @id @default(autoincrement())
+  authorId String
+  image String
+  content String @db.Text
+  createdAt DateTime @default(now())
+  likes     TierlistLike[]
+  replies   TierlistReply[]
+
+  user User @relation(fields: [authorId], references: [id])
+
+  @@map("tierlist")
+}
+
+model TierlistLike {
+  id Int @id @default(autoincrement())
+  userId String
+  tierlistId Int
+  value Int 
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  tierlist Tierlist @relation(fields: [tierlistId], references: [id])
+  @@map("tierlist_likes")
+  @@unique([userId, tierlistId])
+  @@index([tierlistId])
+}
+
+model TierlistReply {
+  id Int @id @default(autoincrement())
+  userId String
+  tierlistId Int
+  content String @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  tierlist Tierlist @relation(fields: [tierlistId], references: [id])
+  @@map("tierlist_reply")
+  @@index([tierlistId])
 }
 
