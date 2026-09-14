@@ -67,6 +67,8 @@ hubRouter.get('/api/hub/tierlist/:id_tierlist' , authMiddleware, hubController.g
 hubRouter.get('/api/hub/tierlist' , authMiddleware, hubController.getTierlistAllC)
 hubRouter.post('/api/hub/tierlist/:id_tierlist/reply', authMiddleware, hubController.createReplyTierlistC)
 hubRouter.post('/api/hub/tierlist/:id_tierlist/vote', authMiddleware, hubController.voteTierlistC)
+hubRouter.patch('/api/hub/update', authMiddleware, hubController.updateOperationInHubC)
+hubRouter.delete('/api/hub/delete', authMiddleware, hubController.deleteOperationInHubC)
 
 export{
     userRouter,

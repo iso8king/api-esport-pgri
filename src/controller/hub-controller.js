@@ -166,6 +166,36 @@ const voteTierlistC = async(req,res,next) => {
     }
 }
 
+const updateOperationInHubC = async(req,res,next) => {
+    try {
+        const request = req.body;
+        request.authorId = req.user.id;
+        const service = req.query.service;
+
+        const result = await hubService.updateOperationInHub(request, service);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
+const deleteOperationInHubC = async(req,res,next) => {
+    try {
+        const request = req.body;
+        request.authorId = req.user.id;
+        const service = req.query.service;
+
+        const result = await hubService.deleteOperationInHub(request, service);
+        res.status(200).json({
+            data : result
+        })
+    } catch (e) {
+        next(e);        
+    }
+}
+
 export default{
     createThreadC,
     getThreadListC,
@@ -177,5 +207,7 @@ export default{
     getTierlistAllC,
     getTierlistC,
     createReplyTierlistC,
-    voteTierlistC
+    voteTierlistC,
+    updateOperationInHubC,
+    deleteOperationInHubC
 }

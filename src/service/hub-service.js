@@ -1,7 +1,7 @@
 import { prismaClient } from "../application/database.js";
 import { validate } from "../validation/validate.js";
 import { responseError } from "../error/response-error.js";
-import { createCommentTierlistValidation, createReplyValidation, createThreadValidation, createTierlistValidation, idThreadValidation, threadIdValidation, voteTierlistValidation } from "../validation/hub-validation.js";
+import { createCommentTierlistValidation, createReplyValidation, createThreadValidation, createTierlistValidation, deleteReplyThreadValidation, deleteReplyTierlistValidation, deleteThreadValidation, deleteTierlistValidation, idThreadValidation, threadIdValidation, updateCommentTierlistValidation, updateReplyThreadValidation, updateThreadValidation, updateTierlistValidation, voteTierlistValidation } from "../validation/hub-validation.js";
 import { transformDocument } from "@prisma/client/runtime/index.js";
 
 const createThread = async(id_user,request) => {
@@ -483,6 +483,237 @@ const voteTierlist = async (request, id_user) => {
     };
 };
 
+const updateOperationInHub = async(request, service) => {
+    let result = {};
+    switch (service) {
+        case "thread":
+            request = validate(updateThreadValidation, request);
+
+            const thread = await prismaClient.thread.findFirst({
+                where : {
+                    AND : [
+                        {id : request.id},
+                        {authorId : request.authorId}
+                    ]
+                }
+            });
+
+            if(!thread) throw new responseError(404, "Tidak Ditemukan");
+
+            const field = ["title", "content", "pinned"];
+            const data = {}
+
+            for (const f of field) {
+                if(request[f] !== undefined) data[f] = request[f]
+            }
+            
+            result = await prismaClient.thread.update({
+                where : {
+                    id : request.id
+                }, data
+            })
+            
+            break;
+        
+        case "replyThread":
+            request = validate(updateReplyThreadValidation, request);
+
+            const replyThread = await prismaClient.threadReply.findFirst({
+                where : {
+                    AND : [
+                        {id : request.id},
+                        {authorId : request.authorId},
+                        {threadId : request.threadId}
+                    ]
+                }
+            });
+
+            if(!replyThread) throw new responseError(404, "Thread Reply Not Found!");
+
+            result = await prismaClient.threadReply.update({
+                where : {
+                    id : request.id
+                }, data : {
+                    content : request.content
+                }
+            });
+            break;
+
+        case "tierlist" :
+            request = validate(updateTierlistValidation, request);
+
+            const tierlist = await prismaClient.tierlist.findFirst({
+                where : {
+                    AND : [
+                        {authorId : request.authorId},
+                        {id : request.id}
+                    ]
+                }
+            });
+
+            if(!tierlist) throw new responseError(404, "Tierlist Not Found!");
+
+            result = await prismaClient.tierlist.update({
+                where : {
+                    id : request.id
+                }, data : {
+                    content : request.content
+                }    
+            })
+            break;
+
+        case "replyTierlist" : 
+            request = validate(updateCommentTierlistValidation, request);
+            const reply = await prismaClient.tierlistReply.findFirst({
+                where : {
+                    AND : [
+                        {id : request.id},
+                        {tierlistId : request.tierlistId},
+                        {userId : request.authorId}
+                    ]
+                }
+            });
+
+            if(!reply) throw new responseError(404, "Reply Tierlist not found!");
+
+            result = await prismaClient.tierlistReply.update({
+                where : {
+                    id : request.id
+                },
+                data : {
+                    content : request.content
+                }
+            })
+            break;
+            
+    
+        default:
+            throw new responseError(400, "Tulis Query service di url!");
+        
+    }
+    return result;
+}
+
+const deleteOperationInHub = async (request, service) => {
+    let result = {};
+
+    switch (service) {
+
+        case "thread":
+            request = validate(deleteThreadValidation, request);
+
+            const thread = await prismaClient.thread.findFirst({
+                where: {
+                    AND: [
+                        { id: request.id },
+                        { authorId: request.authorId }
+                    ]
+                }
+            });
+
+            if (!thread) {
+                throw new responseError(404, "Thread Not Found!");
+            }
+
+            result = await prismaClient.thread.delete({
+                where: {
+                    id: request.id
+                }
+            });
+
+            break;
+
+
+        case "replyThread":
+            request = validate(deleteReplyThreadValidation, request);
+
+            const replyThread = await prismaClient.threadReply.findFirst({
+                where: {
+                    AND: [
+                        { id: request.id },
+                        { authorId: request.authorId },
+                        { threadId: request.threadId }
+                    ]
+                }
+            });
+
+            if (!replyThread) {
+                throw new responseError(404, "Thread Reply Not Found!");
+            }
+
+            result = await prismaClient.threadReply.delete({
+                where: {
+                    id: request.id
+                }
+            });
+
+            break;
+
+
+        case "tierlist":
+            request = validate(deleteTierlistValidation, request);
+
+            const tierlist = await prismaClient.tierlist.findFirst({
+                where: {
+                    AND: [
+                        { id: request.id },
+                        { authorId: request.authorId }
+                    ]
+                }
+            });
+
+            if (!tierlist) {
+                throw new responseError(404, "Tierlist Not Found!");
+            }
+
+            result = await prismaClient.tierlist.delete({
+                where: {
+                    id: request.id
+                }
+            });
+
+            break;
+
+
+        case "replyTierlist":
+            request = validate(deleteReplyTierlistValidation, request);
+
+            const replyTierlist = await prismaClient.tierlistReply.findFirst({
+                where: {
+                    AND: [
+                        { id: request.id },
+                        { tierlistId: request.tierlistId },
+                        { userId: request.authorId }
+                    ]
+                }
+            });
+
+            if (!replyTierlist) {
+                throw new responseError(
+                    404,
+                    "Reply Tierlist Not Found!"
+                );
+            }
+
+            result = await prismaClient.tierlistReply.delete({
+                where: {
+                    id: request.id
+                }
+            });
+
+            break;
+
+
+        default:
+            throw new responseError(
+                400,
+                "Tulis Query service di url!"
+            );
+    }
+
+    return result;
+};
+
 
 export default{
     createThread,
@@ -495,5 +726,7 @@ export default{
     getTierlistAll,
     getTierList,
     createReplyTierlist,
-    voteTierlist
+    voteTierlist,
+    updateOperationInHub,
+    deleteOperationInHub
 }
